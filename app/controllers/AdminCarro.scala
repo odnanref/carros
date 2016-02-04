@@ -33,8 +33,8 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
   def add = Action.async(parse.multipartFormData) { implicit request =>
     
-    handleUpload(request)
-
+    val filename = handleUpload(request)
+    println("filename " + filename)
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
@@ -77,7 +77,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       val contentType = picture.contentType
 
       picture.ref.moveTo(new File(Play.application.path + "/public/images/carros/" + picture.filename))
-      picture.filename
+      Option(picture.filename)
 
     }.getOrElse {
       println("Missing file.")
