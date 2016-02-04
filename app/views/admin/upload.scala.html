@@ -1,0 +1,16 @@
+@import helper._
+
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+	@form(routes.AdminCarro.upload, 'enctype -> "multipart/form-data") {
+	    
+	    <input type="file" name="picture">
+	    
+	    <p>
+	        <input type="submit">
+	    </p>
+	    
+	}
+	</div>
+}

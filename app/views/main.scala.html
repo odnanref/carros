@@ -1,0 +1,84 @@
+@(Main: Main)(content: Html)
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>@Main.title</title>
+        <meta name="description" content="@Main.description">
+	    <meta name="author" content="Odnanref">
+	    <meta name="keywords" content="@Main.keywords" />
+
+	    <meta property="og:title" content="Emenda Parlamentar Nº042963/2014 " />
+	    <meta property="og:description" content="@Main.description" />
+	    <meta property="og:type" content="website" />
+	    <meta property="og:url" content="@Main.url" />
+	    <meta property="og:image" content="@routes.Assets.at(Main.img)" />
+
+	    <meta name="twitter:card" content="summary_large_image">
+	    <meta name="twitter:site" content="@@netriver">
+	    <meta name="twitter:creator" content="@@netriver">
+	    <meta name="twitter:title" content="@Main.title">
+	    <meta name="twitter:description" content="@Main.description">
+	    <meta name="twitter:image:src" content="@routes.Assets.at(Main.img)">
+	    <meta name="twitter:domain" content="@Main.url">
+
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
+        <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    </head>
+    <body>
+
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Car thing Dealer</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right">
+            <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+<div class="container" style="margin-top: 140px;">
+@content
+</div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Odnanref, Inc.</p>
+      </footer>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="../../dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+
+    </body>
+</html>
