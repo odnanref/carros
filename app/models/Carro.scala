@@ -7,7 +7,7 @@ import play.api.libs.json._
 
 case class Carro(id: Long, name:String, description:String, img:String, keywords:String)
 
-case class CarroFormData(name: String, description: String, img: String, keywords: String)
+case class CarroFormData(name: String, description: String, keywords: String)
 
 object CarroForm {
 
@@ -15,7 +15,6 @@ object CarroForm {
     mapping(
       "name" -> nonEmptyText,
       "description" -> nonEmptyText,
-      "img" -> text,
       "keywords" -> nonEmptyText
     )(CarroFormData.apply)(CarroFormData.unapply)
   )

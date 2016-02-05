@@ -41,7 +41,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
         Ok(views.html.admin.index(errorForm))
       },
       carro => 
-        repo.create(carro.name, carro.description, carro.img, carro.keywords).map { _ =>
+        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords).map { _ =>
 		      // If successful, we simply redirect to the index page.
 		      Redirect(routes.Application.index)
         }
