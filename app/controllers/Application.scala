@@ -21,6 +21,7 @@ class Application  @Inject() (repo: CarroRepository)
   	//val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
   	repo.get(id).map { car =>
 		  Ok(views.html.carro(car.getOrElse(throw new RuntimeException("None available"))))
+      // TODO make this show a not found personalised page
   	}
   }  
 }

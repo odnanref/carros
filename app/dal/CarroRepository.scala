@@ -78,7 +78,7 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
   }
 
   /**
-   * List all the people in the database.
+   * List all the cars in the database.
    */
   def list(): Future[Seq[Carro]] = db.run {
     carro.result

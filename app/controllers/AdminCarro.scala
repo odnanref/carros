@@ -13,13 +13,19 @@ import models._
 import dal._
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{Success, Failure}
 
 import javax.inject._
 
 class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
-  def index = TODO
+  def index = Action.async {
+    val lista = repo.list()
+    lista.map( i =>
+    Ok(views.html.admin.list(i))
+    )
+  }
 
   def carro( id:Long) = Action {
   	
@@ -76,8 +82,18 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       val filename = picture.filename
       val contentType = picture.contentType
 
-      picture.ref.moveTo(new File(Play.application.path + "/public/images/carros/" + picture.filename))
-      Option(picture.filename)
+      var f1 = new File(Play.application.path + "/public/images/carros/" + picture.filename)
+      var found:Boolean = false
+      if (f1.exists()) {
+        f1 = new File(Play.application.path + "/public/images/carros/new-" + picture.filename)
+        found = true
+      }
+      picture.ref.moveTo(f1)
+      if (found) {
+        Option("new-" + picture.filename)
+      } else {
+        Option(picture.filename)
+      }
 
     }.getOrElse {
       println("Missing file.")

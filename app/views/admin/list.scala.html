@@ -1,0 +1,15 @@
+@(lista: Seq[models.Carro])
+
+@import helper._
+
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+	@lista.map { car =>
+	<h3>@car.name</h3>
+	<span>@car.description</span>
+	<img src="@routes.Assets.at(car.img)" alt="@car.name" width="200" height="100" />
+	}
+
+	</div>
+}
