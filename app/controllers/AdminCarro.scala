@@ -29,7 +29,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
   def carro( id:Long) = Action {
   	
-  	val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
+  	val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
   	Ok(views.html.admin.carro(car))
   }
 
@@ -47,7 +47,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
         Ok(views.html.admin.index(errorForm))
       },
       carro => 
-        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords).map { _ =>
+        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state).map { _ =>
 		      // If successful, we simply redirect to the index page.
 		      Redirect(routes.Application.index)
         }

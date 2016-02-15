@@ -10,7 +10,12 @@
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
 		@inputText(car("keywords"), '_label -> "Palavras chave")
-		
+		@select(
+			car("state"),
+			options("active" -> "Activo", "unactive" -> "Inactivo"),
+			'_label -> "Estado",
+			'_default -> "None"
+		)
 		<div class="buttons">
 			<input type="submit" value="Adicionar" class="btn"/>
 		</div>
