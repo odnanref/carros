@@ -23,7 +23,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
   def index = Action.async {
     val lista = repo.list()
     lista.map( i =>
-    Ok(views.html.admin.list(i))
+      Ok(views.html.admin.list(i))
     )
   }
 
@@ -54,6 +54,26 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       
     )
 
+  }
+
+  def editView(id:Long) = Action.async {
+    //Ok(views.html.admin.index(CarroForm.form))
+
+    //val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
+    repo.get(id).map { car =>
+      car.getOrElse(throw new RuntimeException("None available")) // TODO better 404
+
+      val data = Map(
+        "id" -> car.get.id.toString, 
+        "name" -> car.get.name,
+        "description" -> car.get.description,
+        "keywords" -> car.get.keywords,
+        "img" -> car.get.img,
+        "state" -> car.get.state
+        )
+      Ok(views.html.admin.index(CarroForm.form.bind(data)))
+      // TODO make this show a not found personalised page
+    }
   }
 
   def uploadView = Action { request =>

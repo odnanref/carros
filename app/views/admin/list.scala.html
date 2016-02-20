@@ -5,11 +5,30 @@
 
 @main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
 	<div class="container">
+		<table class="table table-hover table-bordered">
+			<tr>
+				<th>ID</td>
+				<th>Nome</th>
+				<th>Descrição</th>
+				<th>Imagem principal</th>
+			</tr>
 	@lista.map { car =>
-	<h3>@car.name</h3>
-	<span>@car.description</span>
-	<img src="@routes.Assets.at(car.img)" alt="@car.name" width="200" height="100" />
+	<tr>
+		<td>
+			<a href="@routes.AdminCarro.editView(car.id)">@car.id</a>
+		</td>
+		<td>@car.name</td>
+		<td>@if(car.description.length() > 20) {
+			@car.description.substring(0, 20)
+		} else {
+			@car.description
+		}
+		</td>
+		<td>
+			<img src="@routes.Assets.at(car.img)" alt="@car.name" width="200" height="100" />
+		</td>
+	</tr>
 	}
-
+		</table>
 	</div>
 }

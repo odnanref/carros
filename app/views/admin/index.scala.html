@@ -9,6 +9,8 @@
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
+		Existente<!-- current -->
+		 <span>@car("img").value</span><button onClick='alert("Deleting");' class="btn">apagar</button>
 		@inputText(car("keywords"), '_label -> "Palavras chave")
 		@select(
 			car("state"),
