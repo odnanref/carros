@@ -10,7 +10,9 @@
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
 		Existente<!-- current -->
-		 <span>@car("img").value</span><button onClick='alert("Deleting");' class="btn">apagar</button>
+		<img src="@routes.Assets.at(car("img").value.get)" width="200" height="100"  />
+		 <span>@car("img").value</span>
+		 <a onClick='javascript:DeleteImage(@car("id").value);' class="btn">apagar</a><!-- Delete the image link -->
 		@inputText(car("keywords"), '_label -> "Palavras chave")
 		@select(
 			car("state"),
@@ -32,4 +34,17 @@
 	</ul>
 
 	</div>
+	<script type="text/javascript">
+	function DeleteImage(id) {
+		if (confirm("Eliminar a imagem?")) { // confirm image delete?
+			// if yes
+			var http_url = "@routes.AdminCarro.removeImage(31337)";
+			$.get( http_url.replace("31337", id), function( data ) {
+				console.log("This was the answer " + data);
+				// TODO Pretty result here
+			});
+		}
+		return false;
+	}
+	</script>
 }

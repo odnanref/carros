@@ -15,6 +15,8 @@ import dal._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{Success, Failure}
 
+import java.io.File
+
 import javax.inject._
 
 class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
@@ -101,14 +103,19 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       import java.io.File
       val filename = picture.filename
       val contentType = picture.contentType
+      val imagePath = current.configuration.getString("car.imageLocation").getOrElse("")
 
-      var f1 = new File(Play.application.path + "/public/images/carros/" + picture.filename)
-      var found:Boolean = false
-      if (f1.exists()) {
-        f1 = new File(Play.application.path + "/public/images/carros/new-" + picture.filename)
-        found = true
+      var f1 = new File(Play.application.path + imagePath + picture.filename)
+      
+      val found:Boolean = if (f1.exists()) {
+        f1 = new File(Play.application.path + imagePath + "new-" + picture.filename)
+        true
+      } else {
+        false
       }
-      picture.ref.moveTo(f1)
+
+      picture.ref.moveTo(f1) 
+      // FIXME handle move error
       if (found) {
         Option("new-" + picture.filename)
       } else {
@@ -124,6 +131,35 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       */
       None
     } 
+  }
+
+  /**
+   * Delete existing img file by the Car ID
+   *
+   * @param int Id
+   *
+   */
+  def removeImage(id: Long) = Action {
+    var json = ""
+    
+    val car = repo.get(id).map { car =>
+      car.getOrElse(throw new RuntimeException("None available")) // TODO better 404
+      // FIXME place complete path for the image file
+      val imagePath = current.configuration.getString("car.imageLocation").getOrElse("")
+      val imageName = Play.application.path + imagePath + car.get.img
+      val f1 = new File(imageName)
+      
+      if (imageName.toUpperCase != "" && f1.exists()) {
+        f1.delete()
+        if (!f1.exists()) {
+          json = "{status:\"ok\", data: \"Imagem removida\"}" // image deleted ok
+        } else {
+          json = "{status:\"error\", data: \"Imagem não removida\"}" // image deleted error
+        }
+      }
+      
+    }
+    Ok(json)
   }
 
   def remove = TODO
