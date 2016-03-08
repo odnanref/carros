@@ -5,12 +5,12 @@
 @main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
 	<div class="container">
 	    <h1>Adicionar</h1>
-	@form(routes.AdminCarro.add(), 'enctype -> "multipart/form-data") {
+	@form(routes.AdminCarro.save(), 'enctype -> "multipart/form-data") {
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
 		Existente<!-- current -->
-		<img src="@routes.Assets.at(car("img").value.get)" width="200" height="100"  />
+		<img src="@routes.Assets.at(car("img").value.getOrElse("logo.png"))" width="200" height="100"  />
 		 <span>@car("img").value</span>
 		 <a onClick='javascript:DeleteImage(@car("id").value);' class="btn">apagar</a><!-- Delete the image link -->
 		@inputText(car("keywords"), '_label -> "Palavras chave")
@@ -24,7 +24,6 @@
 			<input type="submit" value="Adicionar" class="btn"/>
 		</div>
 	}
-
 
 	<ul class="nav nav-pills">
 	  <li role="presentation" class="active"><a href="#">Adicionar</a></li>

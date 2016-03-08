@@ -31,7 +31,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
   def carro( id:Long) = Action {
   	
-  	val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
+  	val car = new Carro(Some(1), "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
   	Ok(views.html.admin.carro(car))
   }
 
@@ -39,7 +39,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
     Ok(views.html.admin.index(CarroForm.form))
   }
 
-  def add = Action.async(parse.multipartFormData) { implicit request =>
+  def save() = Action.async(parse.multipartFormData) { implicit request =>
     
     val filename = handleUpload(request)
     println("filename " + filename)
@@ -48,14 +48,38 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       errorForm => scala.concurrent.Future {
         Ok(views.html.admin.index(errorForm))
       },
-      carro => 
-        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state).map { _ =>
-		      // If successful, we simply redirect to the index page.
-		      Redirect(routes.Application.index)
+      carro => {
+        repo.insert(new Carro(None, carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
+        /*
+        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state)
+        */
+        .map { _ =>
+          // If successful, we simply redirect to the index page.
+          Redirect(routes.Application.index)
         }
-      
+        
+      }
     )
+  }
 
+  def update(id: String ) = Action.async(parse.multipartFormData) { implicit request =>
+    val tId:Long = id.toLong
+    val filename = handleUpload(request)
+    println("filename " + filename)
+    CarroForm.form.bindFromRequest.fold(
+      // if any error in submitted data
+      errorForm => scala.concurrent.Future {
+        Ok(views.html.admin.index(errorForm))
+      },
+      carro => {
+        val car = new Carro(Some(carro.id.toLong), carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state)
+        repo.edit(carro.id.toLong, car).map { _ =>
+          // If successful, we simply redirect to the index page.
+          Redirect(routes.Application.index)
+        }
+
+      }
+    )
   }
 
   def editView(id:Long) = Action.async {
@@ -63,7 +87,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
     //val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
     repo.get(id).map { car =>
-      car.getOrElse(throw new RuntimeException("None available")) // TODO better 404
+      car.getOrElse(NotFound) // TODO better 404
 
       val data = Map(
         "id" -> car.get.id.toString, 
@@ -141,7 +165,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
    */
   def removeImage(id: Long) = Action {
     var json = ""
-    
+
     val car = repo.get(id).map { car =>
       car.getOrElse(throw new RuntimeException("None available")) // TODO better 404
       // FIXME place complete path for the image file
@@ -164,5 +188,4 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
   def remove = TODO
 
-  def save = TODO
 }

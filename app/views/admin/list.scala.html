@@ -15,7 +15,7 @@
 	@lista.map { car =>
 	<tr>
 		<td>
-			<a href="@routes.AdminCarro.editView(car.id)">@car.id</a>
+			<a href="@routes.AdminCarro.editView(car.id.get)">@car.id</a>
 		</td>
 		<td>@car.name</td>
 		<td>@if(car.description.length() > 20) {

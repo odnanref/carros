@@ -29,7 +29,7 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
   private class CarroTable(tag: Tag) extends Table[Carro](tag, "carro") {
 
     /** The ID column, which is the primary key, and auto incremented */
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
 
     /** The name column */
     def name = column[String]("name")
@@ -52,9 +52,10 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
      *
      * In this case, we are simply passing the id, name and page parameters to the Person case classes
      * apply and unapply methods.
-     */
+     */ 
     def * = (id, name, description, img, keywords, state) <> 
       ((Carro.apply _).tupled, Carro.unapply)
+    
   }
 
   /**
@@ -80,6 +81,20 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     ) += (name, description, img, keywords, state)
   }
 
+  /** Insert a new car. */
+  def insert(car: Carro): Future[Unit] =
+    db.run(carro += car).map(_ => ())
+
+  /**
+   * Create a car with the given name and age.
+   *
+   * This is an asynchronous operation, it will return a future of the created car, which can be used to obtain the
+   * id for that person.
+   */
+  def edit(id:Long, car:Carro): Future[Unit] = {
+    val carToUpdate: Carro = car.copy(Some(id))
+    db.run(carro.filter(_.id === id).update(carToUpdate)).map(_ => ())
+  }
   /**
    * List all the cars in the database.
    */
