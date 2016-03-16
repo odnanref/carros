@@ -5,7 +5,10 @@
 @main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
 	<div class="container">
 	    <h1>Adicionar</h1>
-	@form(routes.AdminCarro.save(), 'enctype -> "multipart/form-data") {
+	@form(
+	routes.AdminCarro.update()
+	, 'enctype -> "multipart/form-data") {
+		<input type="hidden" name="id" value='@car("id").value' >
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")

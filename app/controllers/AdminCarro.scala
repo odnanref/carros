@@ -62,22 +62,23 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
     )
   }
 
-  def update(id: String ) = Action.async(parse.multipartFormData) { implicit request =>
-    val tId:Long = id.toLong
+  def update() = Action.async(parse.multipartFormData) { implicit request =>
+    //val tId:Long = id.toLong
     val filename = handleUpload(request)
-    println("filename " + filename)
+
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
         Ok(views.html.admin.index(errorForm))
       },
-      carro => {
-        val car = new Carro(Some(carro.id.toLong), carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state)
+      carro => {        
+        val car = new Carro( Some(carro.id.toLong), carro.name, carro.description, 
+          filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state)
+
         repo.edit(carro.id.toLong, car).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.Application.index)
+          Redirect(routes.AdminCarro.index)
         }
-
       }
     )
   }
@@ -87,10 +88,13 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
 
     //val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
     repo.get(id).map { car =>
-      car.getOrElse(NotFound) // TODO better 404
+      // TODO better 404
+      if (car == None) {
+        NotFound
+      } else {
 
       val data = Map(
-        "id" -> car.get.id.toString, 
+        "id" -> car.get.id.get.toString, 
         "name" -> car.get.name,
         "description" -> car.get.description,
         "keywords" -> car.get.keywords,
@@ -98,6 +102,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
         "state" -> car.get.state
         )
       Ok(views.html.admin.index(CarroForm.form.bind(data)))
+      }
       // TODO make this show a not found personalised page
     }
   }

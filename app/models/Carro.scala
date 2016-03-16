@@ -23,8 +23,5 @@ object CarroForm {
 }
 
 object Carros {
-
-
   implicit val carroFormat = Json.format[Carro]
-
 }

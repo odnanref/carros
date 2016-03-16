@@ -6,7 +6,10 @@ import slick.driver.JdbcProfile
 
 import models._
 
-import scala.concurrent.{ Future, ExecutionContext }
+import scala.concurrent._
+import scala.concurrent.duration._
+
+import scala.util.{Success, Failure}
 
 /**
  * A repository for people.
@@ -111,6 +114,15 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
 
   def get(id: Long): Future[Option[Carro]] = {
     dbConfig.db.run(carro.filter(_.id === id).result.headOption)
+  }
+
+  def getImage( id:Long) :String = {
+    var result:String = "" 
+    if (id <= 0) {
+      return "logo.png"
+    }
+
+    Await.result(this.get(id.toLong), 10 seconds).get.img
   }
 
 }
