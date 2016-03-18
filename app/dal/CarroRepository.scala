@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 import scala.util.{Success, Failure}
 
 /**
- * A repository for people.
+ * A repository for Cars.
  *
  * @param dbConfigProvider The Play db config provider. Play will inject this for you.
  */
