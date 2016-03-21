@@ -125,4 +125,16 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     Await.result(this.get(id.toLong), 10 seconds).get.img
   }
 
+  /**
+   * Clear the image field to logo.png so there is no default img to show
+   */
+  def clearImage(id :Long) : Unit = {
+    val q = for { c <- carro if c.id === id } yield c.img
+    val updateAction = q.update("logo.png")
+
+    // Get the statement without having to specify an updated value:
+    val sql = q.updateStatement
+    db.run(updateAction)
+  }
+
 }

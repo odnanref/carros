@@ -181,6 +181,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
       if (imageName.toUpperCase != "" && f1.exists()) {
         f1.delete()
         if (!f1.exists()) {
+          repo.clearImage(id) // set to empty in database
           json = "{status:\"ok\", data: \"Imagem removida\"}" // image deleted ok
         } else {
           json = "{status:\"error\", data: \"Imagem não removida\"}" // image deleted error
