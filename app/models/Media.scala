@@ -6,5 +6,5 @@ import play.api.data.Forms._
 import play.api.libs.json._
 
 
-case class Media(id:Option[Long], name:String, path:String)
+case class Media(id:Option[Long], name:String, path:String, car_id:Long)
 
