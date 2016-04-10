@@ -19,7 +19,7 @@ import java.io.File
 
 import javax.inject._
 
-class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
+class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   def index = Action.async {
@@ -36,7 +36,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
   }
 
   def addView = Action {
-    Ok(views.html.admin.index(CarroForm.form))
+    Ok(views.html.admin.add(CarroForm.form))
   }
 
   def save() = Action.async(parse.multipartFormData) { implicit request =>
@@ -46,7 +46,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
-        Ok(views.html.admin.index(errorForm))
+        Ok(views.html.admin.add(errorForm))
       },
       carro => {
         repo.insert(new Carro(None, carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
@@ -69,7 +69,9 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
-        Ok(views.html.admin.index(errorForm))
+        val id = CarroForm.form("id").value.get.toLong
+        val medias = repomedia.getByCarId(id)
+        Ok(views.html.admin.update(errorForm, medias))
       },
       carro => {        
         val car = new Carro( Some(carro.id.toLong), carro.name, carro.description, 
@@ -101,7 +103,9 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
         "img" -> car.get.img,
         "state" -> car.get.state
         )
-      Ok(views.html.admin.index(CarroForm.form.bind(data)))
+      val id = car.get.id.get.toLong
+      val medias = repomedia.getByCarId(id)
+      Ok(views.html.admin.update(CarroForm.form.bind(data), medias))
       }
       // TODO make this show a not found personalised page
     }
@@ -112,23 +116,24 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
   }
 
   def upload = Action(parse.multipartFormData) { request => 
-  	request.body.file("picture").map { picture =>
-	    import java.io.File
-	    val filename = picture.filename
-	    val contentType = picture.contentType
-
-	    picture.ref.moveTo(new File(Play.application.path + "/public/images/carros/" + picture.filename))
-	    Ok("File uploaded")
+  	request.body.file("img").map { picture =>
+      val car_id = request.body.dataParts.get("car_id").get(0).toLong;
+      val filename = handleUpload(request)
+	    if (filename != None) {
+        val Media = new Media(None, filename.get, filename.get, car_id)
+        repomedia.insert(Media)
+        //repomedia.create(filename.get, filename.get, car_id)
+        Ok("File uploaded")
+      } else {
+        Ok("Failed to upload")
+      }
   	}.getOrElse {
-  	    Redirect(routes.Application.index).flashing(
-  	      "error" -> "Missing file"
-  	    )
+  	    Ok("Failed, no file placed for upload")
   	}
   }
 
   def handleUpload( request: Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) : Option[String] = {
-
-   request.body.file("img").map { picture =>
+    request.body.file("img").map { picture =>
       import java.io.File
       val filename = picture.filename
       val contentType = picture.contentType
@@ -159,7 +164,7 @@ class AdminCarro @Inject() (repo: CarroRepository, val messagesApi: MessagesApi)
         )
       */
       None
-    } 
+    }
   }
 
   /**
