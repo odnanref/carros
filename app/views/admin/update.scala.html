@@ -1,0 +1,68 @@
+@(car: Form[CarroFormData], medias: Seq[Media])(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+	    <h1>Adicionar</h1>
+	@form(
+	routes.AdminCarro.update()
+	, 'enctype -> "multipart/form-data") {
+		<input type="hidden" name="id" value='@car("id").value' >
+		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
+		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
+		@inputFile(car("img"), '_label -> "Imagem")
+		Existente<!-- current -->
+		<img src="@routes.Assets.at(car("img").value.getOrElse("logo.png"))" width="200" height="100"  />
+		 <span>@car("img").value</span>
+		 <a onClick='javascript:DeleteImage(@car("id").value);' class="btn">apagar</a><!-- Delete the image link -->
+		@inputText(car("keywords"), '_label -> "Palavras chave")
+		@select(
+			car("state"),
+			options("active" -> "Activo", "unactive" -> "Inactivo"),
+			'_label -> "Estado",
+			'_default -> "None"
+		)
+		<div class="buttons">
+			<input type="submit" value="Alterar" class="btn"/>
+		</div>
+	}
+	<!-- Shows related images -->
+	<div style="position: absolute; top: 140px; left: 200px;">
+		<ul class="list-group">
+			@for( media <- medias ) {
+			<li class="list-group-item">
+				<img src="@routes.Assets.at(media.path)" width="100" height="50" /> &nbsp; 
+				<a href="apagar">apagar</a>
+			</li>
+			}
+		</ul>
+	</div>
+
+	<div style="background-color: #f0f0f0; width: 400px; height: 100px; padding: 4px;">
+		<form action="@routes.AdminCarro.upload()" method="POST" enctype="multipart/form-data">
+			<span for="image">Upload file</span>
+			<input type="file" name="img" id="image"/>
+			<input type="hidden" name="car_id" value="@car("id").value" />
+			<button type="submit" class="btn">Upload</button>
+		</form>
+	</div>
+
+	@admin.nav()
+
+	</div>
+	
+	<script type="text/javascript">
+	function DeleteImage(id) {
+		if (confirm("Eliminar a imagem?")) { // confirm image delete?
+			// if yes
+			var http_url = "@routes.AdminCarro.removeImage(31337)";
+			$.get( http_url.replace("31337", id), function( data ) {
+				console.log("This was the answer " + data);
+				// TODO Pretty result here
+			});
+		}
+		return false;
+	}
+	</script>
+}

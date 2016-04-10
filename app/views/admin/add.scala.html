@@ -1,0 +1,33 @@
+@(car: Form[CarroFormData])(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+	    <h1>Adicionar</h1>
+	@form(routes.AdminCarro.save()
+	, 'enctype -> "multipart/form-data") {
+		<input type="hidden" name="id" value='@car("id").value' >
+		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
+		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
+		@inputFile(car("img"), '_label -> "Imagem")
+		Existente<!-- current -->
+		<img src="@routes.Assets.at(car("img").value.getOrElse("logo.png"))" width="200" height="100"  />
+		 <span>@car("img").value</span>
+		@inputText(car("keywords"), '_label -> "Palavras chave")
+		@select(
+			car("state"),
+			options("active" -> "Activo", "unactive" -> "Inactivo"),
+			'_label -> "Estado",
+			'_default -> "None"
+		)
+		<div class="buttons">
+			<input type="submit" value="Adicionar" class="btn"/>
+		</div>
+	}
+
+	@admin.nav()
+
+	</div>
+	
+}
