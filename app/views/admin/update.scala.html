@@ -10,7 +10,8 @@
 	, 'enctype -> "multipart/form-data") {
 		<input type="hidden" name="id" value='@car("id").value' >
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
-		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
+		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description"
+		, 'cols -> 50, 'rows -> 10)
 		@inputFile(car("img"), '_label -> "Imagem")
 		Existente<!-- current -->
 		<img src="@routes.Assets.at(car("img").value.getOrElse("logo.png"))" width="200" height="100"  />
@@ -30,6 +31,9 @@
 	<!-- Shows related images -->
 	<div style="position: absolute; top: 140px; left: 150px;">
 		<ul class="list-group">
+			<li class="list-group-item">
+				<a href="#" onclick="javascript:$('#divuploadimg').show();">enviar imagem</a>
+			</li>
 			@for( media <- medias ) {
 			<li class="list-group-item">
 				<img src="@routes.Assets.at(media.path)" width="100" height="50" /> &nbsp; 
@@ -39,12 +43,19 @@
 		</ul>
 	</div>
 
-	<div style="background-color: #f0f0f0; width: 400px; height: 100px; padding: 4px;">
+	<div style="background-color: #f0f0f0; width: 450px; height: 120px; padding: 4px; top: 200px; left: 200px; position:absolute; z-index:6;" id="divuploadimg">
+		
 		<form enctype="multipart/form-data" id="uploadimgform" >
-			<span for="image">Upload file</span>
+			<h3 for="image">Escolha o arquivo</h3>
 			<input type="file" name="img" id="image"/>
 			<input type="hidden" name="car_id" value="@car("id").value" />
-			<input type='button' class="btn" id="uploadimg" value="Upload" />
+
+			<a onClick="javascript:$('#divuploadimg').hide();" href="#" class="btn btn-warning btn-small">
+				Cancelar
+			</a>
+			&nbsp;&nbsp;
+			<input type='button' class="btn btn-danger" id="uploadimg" value="Upload" />
+
 		</form>
 	</div>
 
@@ -94,6 +105,8 @@ $('#uploadimg').click(function(){
         processData: false
     });
 });
+
+$('#divuploadimg').hide();
 
 	</script>
 }
