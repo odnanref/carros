@@ -109,4 +109,9 @@ class MediaRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     Await.result(dbConfig.db.run(media.filter(_.car_id === id).result), 10 seconds)
   }
 
+  def erase(id:Long) : Boolean = {
+    dbConfig.db.run(media.filter(_.id === id).delete)// FIXME not tested
+    true
+  }
+
 }

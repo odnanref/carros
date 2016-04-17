@@ -134,6 +134,7 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
 
     // Get the statement without having to specify an updated value:
     val sql = q.updateStatement
+    
     db.run(updateAction)
   }
 

@@ -8,6 +8,8 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.Play.current // for getting the current application path
+import play.api.libs.json.Json
+import play.api.libs.json._
 
 import models._
 import dal._
@@ -21,6 +23,8 @@ import javax.inject._
 
 class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
+
+  implicit val responseFormat = Json.format[JsonResponse]
 
   def index = Action.async {
     val lista = repo.list()
@@ -50,9 +54,6 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
       },
       carro => {
         repo.insert(new Carro(None, carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
-        /*
-        repo.create(carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state)
-        */
         .map { _ =>
           // If successful, we simply redirect to the index page.
           Redirect(routes.Application.index)
@@ -123,12 +124,18 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
         val Media = new Media(None, filename.get, filename.get, car_id)
         repomedia.insert(Media)
         //repomedia.create(filename.get, filename.get, car_id)
-        Ok("File uploaded")
+        //Ok("{ status:\"ok\", data: \"File uploaded\"}")
+        val jr = new JsonResponse("ok", "File uploaded")
+        //val json = jr.responseFormat
+        val json = Json.toJson(jr)
+        Ok(json)
       } else {
-        Ok("Failed to upload")
+        val jr = new JsonResponse("error", "Failed to upload")
+        Ok(Json.toJson(jr))
       }
   	}.getOrElse {
-  	    Ok("Failed, no file placed for upload")
+        val json = new JsonResponse("error", "Failed, no file placed for upload")
+        Ok(Json.toJson(json))
   	}
   }
 
@@ -187,9 +194,13 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
         f1.delete()
         if (!f1.exists()) {
           repo.clearImage(id) // set to empty in database
-          json = "{status:\"ok\", data: \"Imagem removida\"}" // image deleted ok
+          // image deleted ok
+          val json = new JsonResponse("ok", "Imagem removida")
+          Ok(Json.toJson(json))
         } else {
-          json = "{status:\"error\", data: \"Imagem não removida\"}" // image deleted error
+          val json = new JsonResponse("error", "Imagem não removida")
+          // image deleted error
+          Ok(Json.toJson(json))
         }
       }
       
@@ -198,5 +209,35 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
   }
 
   def remove = TODO
+
+  def removeMedia(id: Long) = Action.async {
+    var json = ""
+
+    repomedia.get(id).map { media =>
+      media.getOrElse(NotFound("This was not found. Sorry.")) // TODO better 404
+      // FIXME place complete path for the image file
+      val imagePath = current.configuration.getString("car.imageLocation").getOrElse("")
+      val imageName = Play.application.path + imagePath + media.get.path
+      val f1 = new File(imageName)
+      
+      if (imageName.toUpperCase != "" && f1.exists()) {
+        f1.delete()
+        if (!f1.exists()) {
+          repomedia.erase(id) // set to empty in database
+          // image deleted ok
+          val json = new JsonResponse("ok", "Media removida")
+          Ok(Json.toJson(json))
+        } else {
+          // image deleted error
+          val json = new JsonResponse("error", "Media não removida")
+          Ok(Json.toJson(json))
+        }
+      } else {
+        repomedia.erase(id) // set to empty in database
+        val json = new JsonResponse("ok", "Media removida na BD")
+        Ok(Json.toJson(json))
+      }
+    }
+  }
 
 }
