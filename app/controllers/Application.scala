@@ -9,7 +9,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 import javax.inject._
 
-class Application  @Inject() (repo: CarroRepository)
+class Application  @Inject() (repo: CarroRepository, repomedia: MediaRepository)
                                  (implicit ec: ExecutionContext) extends Controller {
 
   def index = Action {
@@ -20,7 +20,11 @@ class Application  @Inject() (repo: CarroRepository)
   	
   	//val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
   	repo.get(id).map { car =>
-		  Ok(views.html.carro(car.getOrElse(throw new RuntimeException("None available"))))
+      val medias = repomedia.getByCarId(car.get.id.get.toLong)
+		  Ok(views.html.carro(
+        car.getOrElse(throw new RuntimeException("None available")),
+         medias.toList)
+      )
       // TODO make this show a not found personalised page
   	}
   }  
