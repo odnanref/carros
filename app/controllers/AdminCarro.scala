@@ -45,8 +45,10 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
 
   def save() = Action.async(parse.multipartFormData) { implicit request =>
     
-    val filename = handleUpload(request)
-    println("filename " + filename)
+    val car_id = getCarIdFromRequest(request)
+
+    val filename = handleUpload(request, car_id)
+    
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
@@ -65,7 +67,8 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
 
   def update() = Action.async(parse.multipartFormData) { implicit request =>
     //val tId:Long = id.toLong
-    val filename = handleUpload(request)
+    val car_id = getCarIdFromRequest(request)
+    val filename = handleUpload(request, car_id)
 
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
@@ -118,8 +121,8 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
 
   def upload = Action(parse.multipartFormData) { request => 
   	request.body.file("img").map { picture =>
-      val car_id = request.body.dataParts.get("car_id").get(0).toLong;
-      val filename = handleUpload(request)
+      val car_id = getCarIdFromRequest(request)
+      val filename = handleUpload(request, car_id)
 	    if (filename != None) {
         val Media = new Media(None, filename.get, filename.get, car_id)
         repomedia.insert(Media)
@@ -139,7 +142,8 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
   	}
   }
 
-  def handleUpload( request: Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) : Option[String] = {
+  def handleUpload( request: Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]], 
+      car_id:Long ) : Option[String] = {
     request.body.file("img").map { picture =>
       import java.io.File
       val filename = picture.filename
@@ -156,6 +160,9 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
       }
 
       picture.ref.moveTo(f1) 
+      // after moving resize ...
+      val imageReduce = new services.ImageReduce(f1.getAbsolutePath(), car_id)
+      imageReduce.scale()
       // FIXME handle move error
       if (found) {
         Option("new-" + picture.filename)
@@ -240,4 +247,12 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
     }
   }
 
+  def getCarIdFromRequest(request: play.api.mvc.Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) :Long = {
+    val car_id: Option[Seq[String]] = request.body.dataParts.get("car_id")
+    if (car_id == None) {
+      0
+    } else {
+      car_id.get(0).toLong
+    }
+  }
 }
