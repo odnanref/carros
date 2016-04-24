@@ -218,30 +218,16 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
   def remove = TODO
 
   def removeMedia(id: Long) = Action.async {
-    var json = ""
-
     repomedia.get(id).map { media =>
       media.getOrElse(NotFound("This was not found. Sorry.")) // TODO better 404
-      // FIXME place complete path for the image file
-      val imagePath = current.configuration.getString("car.imageLocation").getOrElse("")
-      val imageName = Play.application.path + imagePath + media.get.path
-      val f1 = new File(imageName)
-      
-      if (imageName.toUpperCase != "" && f1.exists()) {
-        f1.delete()
-        if (!f1.exists()) {
-          repomedia.erase(id) // set to empty in database
-          // image deleted ok
-          val json = new JsonResponse("ok", "Media removida")
-          Ok(Json.toJson(json))
-        } else {
-          // image deleted error
-          val json = new JsonResponse("error", "Media não removida")
-          Ok(Json.toJson(json))
-        }
-      } else {
+      if (Media.removePhiMedia(media.get)) {
+        // image deleted ok
         repomedia.erase(id) // set to empty in database
-        val json = new JsonResponse("ok", "Media removida na BD")
+        val json = new JsonResponse("ok", "Media removida")
+        Ok(Json.toJson(json))
+      } else {
+        // image deleted error
+        val json = new JsonResponse("error", "Media não removida")
         Ok(Json.toJson(json))
       }
     }
