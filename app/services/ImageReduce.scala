@@ -17,7 +17,10 @@ import org.slf4j.LoggerFactory
 // new location will be based on the car_id
 	
 class ImageReduce(path: String, car_id:Long) {
-
+	/**
+	 * scale of reduction
+	 */
+	val SCALE = 0.3
 	val Logger:Logger = LoggerFactory.getLogger(this.toString)
 
 	if (!new File(path).exists()) {
@@ -42,7 +45,7 @@ class ImageReduce(path: String, car_id:Long) {
 			Logger.info("directory created for " + path )
 			val in = new FileInputStream(path) // input stream
 			//val out = new FileOutputStream(newFilename) // output stream
-			Image.fromStream(in).scale(0.5, Bicubic).output(newFilename) 
+			Image.fromStream(in).scale(SCALE, Bicubic).output(newFilename) 
 			Logger.info("Image scaled " + path)
 		}
 	}
