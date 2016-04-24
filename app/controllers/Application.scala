@@ -20,11 +20,20 @@ class Application  @Inject() (repo: CarroRepository, repomedia: MediaRepository)
   	
   	//val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
   	repo.get(id).map { car =>
-      val medias = repomedia.getByCarId(car.get.id.get.toLong)
-		  Ok(views.html.carro(
-        car.getOrElse(throw new RuntimeException("None available")),
-         medias.toList)
-      )
+      val medias = if (car != None) {
+        repomedia.getByCarId(car.get.id.get.toLong)
+      } else {
+        Nil
+      }
+
+      if (car != None) {
+        Ok(views.html.carro(
+          car.getOrElse(throw new RuntimeException("None available")),
+          medias.toList))
+      } else {
+        NotFound("Nenhum carro encontrado.")
+      }
+		  
       // TODO make this show a not found personalised page
   	}
   }  
