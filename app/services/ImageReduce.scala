@@ -34,7 +34,7 @@ class ImageReduce(path: String, car_id:Long) {
 		path // assuming its just the filename
 	}
 	Logger.debug(" Filename and basename " + basename + " from path " + path )
-	val newFilename = getNewPath() + File.separator + basename.split('.')(0) + "-small" + 
+	val newFilename = getNewPath() + File.separator + basename.split('.')(0) + "-small" + '.' + 
 	basename.split('.')(1)
 
 	Logger.info("new file is " + newFilename)
