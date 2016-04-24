@@ -15,7 +15,7 @@ case class Media(id:Option[Long], name:String, path:String, car_id:Long) {
 	 * Small image version
 	 */
 	val small:String = car_id.toString + File.separator + 
-		path.split('.')(0) + "-small" + path.split('.')(1)
+		path.split('.')(0) + "-small" + '.' + path.split('.')(1)
 }
 
 object Media {
