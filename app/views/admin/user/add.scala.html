@@ -1,0 +1,23 @@
+@(user: Form[UserFormData])(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+	    <h1>Adicionar</h1>
+	@form(routes.AdminUser.save()) {
+		<input type="hidden" name="id" value='@user("id").value' >
+		@inputText( user("username"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
+		@inputText( user("password"), '_label -> "Senha" , 'id -> "password", 'size -> 20)
+		@inputText( user("email"), '_label -> "E-Mail" , 'id -> "email", 'size -> 20)
+		
+		<div class="buttons">
+			<input type="submit" value="Adicionar" class="btn"/>
+		</div>
+	}
+
+	@admin.nav()
+
+	</div>
+	
+}

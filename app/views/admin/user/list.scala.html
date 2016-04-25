@@ -1,0 +1,35 @@
+@(lista: Seq[models.User])
+
+@import helper._
+
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+	<div class="container">
+		<table class="table table-hover table-bordered">
+			<tr>
+				<th>ID</td>
+				<th>Nome</th>
+				<th>Email</th>
+				<th>&nbsp;</th>
+			</tr>
+	@lista.map { user =>
+	<tr>
+		<td>
+			<a href="@routes.AdminUser.editView(user.id.get)">@user.id</a>
+		</td>
+		<td>@user.username</td>
+		<td>@user.email</td>
+		<td><a href="javascript:apagar(@user.id);">apagar</a></td>
+	</tr>
+	}
+		</table>
+	</div>
+
+	<script type="text/javascript">
+		function apagar(id) {
+			if (confirm("Apagar o utilizador?")) {
+				alert("apagado");// FIXME
+			}
+		}
+	</script>
+}
