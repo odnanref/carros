@@ -36,7 +36,7 @@
 			</li>
 			@for( media <- medias ) {
 			<li class="list-group-item">
-				<img src="@routes.Assets.at(media.path)" width="100" height="50" /> &nbsp; 
+				<img src="@routes.Assets.at(media.small)" width="100" height="50" /> &nbsp; 
 				<a onClick='javascript:DeleteMedia(@media.id);' class="btn">apagar</a>
 			</li>
 			}
