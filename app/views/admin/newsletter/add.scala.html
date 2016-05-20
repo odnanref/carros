@@ -1,0 +1,19 @@
+@(news: Form[Newsletter])(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+<div class="container">
+    <h1>Adicionar</h1>
+    @form(routes.NewsletterController.save()) {
+    @inputText( news("email"), '_label -> "Email" , 'id -> "email", 'size -> 20)
+    <div class="buttons">
+        <input type="submit" value="Adicionar" class="btn"/>
+    </div>
+    }
+
+    @admin.user.nav()
+
+</div>
+
+}
