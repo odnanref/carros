@@ -16,7 +16,7 @@
       @lista.map { news =>
       <tr>
         <td>
-          <a href="@routes.NewsletterController.editView(news.id.get)">@user.id</a>
+          <a href="@routes.NewsletterController.editView(news.id.get)">@news.id</a>
         </td>
         <td>@news.email</td>
         <td>@news.state</td>

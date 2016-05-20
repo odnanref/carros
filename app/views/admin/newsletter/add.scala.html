@@ -1,4 +1,4 @@
-@(news: Form[Newsletter])(implicit messages: Messages)
+@()(implicit messages: Messages)
 
 @import helper._
 
@@ -6,7 +6,7 @@
 <div class="container">
     <h1>Adicionar</h1>
     @form(routes.NewsletterController.save()) {
-    @inputText( news("email"), '_label -> "Email" , 'id -> "email", 'size -> 20)
+    E-Mail:&nbsp;<input type="email" id="email" name="email" size="20" />
     <div class="buttons">
         <input type="submit" value="Adicionar" class="btn"/>
     </div>
