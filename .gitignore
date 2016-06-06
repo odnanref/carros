@@ -16,3 +16,4 @@ server.pid
 activator*
 conf/application.conf
 conf/logback.xml
+.idea
