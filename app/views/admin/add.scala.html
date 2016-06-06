@@ -9,6 +9,7 @@
 	, 'enctype -> "multipart/form-data") {
 		<input type="hidden" name="id" value='@car("id").value' >
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
+		@inputText( car("year"), '_label -> "Ano" , 'id -> "year", 'size -> 20)
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
 		Existente<!-- current -->
@@ -17,7 +18,7 @@
 		@inputText(car("keywords"), '_label -> "Palavras chave")
 		@select(
 			car("state"),
-			options("active" -> "Activo", "unactive" -> "Inactivo"),
+			options("active" -> "Activo", "inactive" -> "Inactivo"),
 			'_label -> "Estado",
 			'_default -> "None"
 		)

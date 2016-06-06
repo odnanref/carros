@@ -1,0 +1,9 @@
+
+@mainWebsite(new Main("Newsletter", "Newsletter", "logo.png", "newsletter", "/newsletter/add")) {
+    <h1>Receba notícias nossas no seu correio  eletrônico</h1>
+    <form action="@routes.NewsletterController.save()" method="POST">
+        <span for="email">E-Mail</span>
+        <input type="email" name="email" id="email" />
+        <input type="submit" name="save" value="Registar" class="btn btn-default"/>
+    </form>
+}

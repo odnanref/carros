@@ -7,43 +7,43 @@ import play.api.i18n._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.Play.current // for getting the current application path
+import play.api.Play.current
 import play.api.libs.json.Json
 import play.api.libs.json._
-
 import models._
 import dal._
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{Success, Failure}
-
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import java.io.File
-
 import javax.inject._
+
+import services.Authenticated
 
 class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   implicit val responseFormat = Json.format[JsonResponse]
+  implicit val MediaFormat = Json.format[Media]
 
-  def index = Action.async {
+  def index = Authenticated.async {
     val lista = repo.list()
     lista.map( i =>
       Ok(views.html.admin.list(i))
     )
   }
 
-  def carro( id:Long) = Action {
+  def carro( id:Long) = Authenticated {
   	
-  	val car = new Carro(Some(1), "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
+  	val car = new Carro(Some(1), "BMW M6", 2005, "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
   	Ok(views.html.admin.carro(car))
   }
 
-  def addView = Action {
+  def addView = Authenticated {
     Ok(views.html.admin.add(CarroForm.form))
   }
 
-  def save() = Action.async(parse.multipartFormData) { implicit request =>
+  def save() = Authenticated.async(parse.multipartFormData) { implicit request =>
     
     val car_id = getCarIdFromRequest(request)
 
@@ -55,7 +55,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
         Ok(views.html.admin.add(errorForm))
       },
       carro => {
-        repo.insert(new Carro(None, carro.name, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
+        repo.insert(new Carro(None, carro.name, carro.year, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
         .map { _ =>
           // If successful, we simply redirect to the index page.
           Redirect(routes.Application.index)
@@ -65,7 +65,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
     )
   }
 
-  def update() = Action.async(parse.multipartFormData) { implicit request =>
+  def update() = Authenticated.async(parse.multipartFormData) { implicit request =>
     //val tId:Long = id.toLong
     val car_id = getCarIdFromRequest(request)
     val filename = handleUpload(request, car_id)
@@ -78,7 +78,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
         Ok(views.html.admin.update(errorForm, medias))
       },
       carro => {        
-        val car = new Carro( Some(carro.id.toLong), carro.name, carro.description, 
+        val car = new Carro( Some(carro.id.toLong), carro.name, carro.year, carro.description,
           filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state)
 
         repo.edit(carro.id.toLong, car).map { _ =>
@@ -89,37 +89,36 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
     )
   }
 
-  def editView(id:Long) = Action.async {
-    //Ok(views.html.admin.index(CarroForm.form))
+  def editView(id:Long) = Authenticated.async {
 
-    //val car = new Carro(1, "BMW M6", "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas")
     repo.get(id).map { car =>
       // TODO better 404
       if (car == None) {
         NotFound
       } else {
 
-      val data = Map(
-        "id" -> car.get.id.get.toString, 
-        "name" -> car.get.name,
-        "description" -> car.get.description,
-        "keywords" -> car.get.keywords,
-        "img" -> car.get.img,
-        "state" -> car.get.state
-        )
-      val id = car.get.id.get.toLong
-      val medias = repomedia.getByCarId(id)
-      Ok(views.html.admin.update(CarroForm.form.bind(data), medias))
+        val data = Map(
+          "id" -> car.get.id.get.toString,
+          "name" -> car.get.name,
+          "year" -> car.get.year.toString(),
+          "description" -> car.get.description,
+          "keywords" -> car.get.keywords,
+          "img" -> car.get.img,
+          "state" -> car.get.state
+          )
+        val id = car.get.id.get.toLong
+        val medias = repomedia.getByCarId(id)
+        Ok(views.html.admin.update(CarroForm.form.bind(data), medias))
       }
       // TODO make this show a not found personalised page
     }
   }
 
-  def uploadView = Action { request =>
+  def uploadView = Authenticated { request =>
     Ok(views.html.admin.upload())
   }
 
-  def upload = Action(parse.multipartFormData) { request => 
+  def upload = Authenticated(parse.multipartFormData) { request =>
   	request.body.file("img").map { picture =>
       val car_id = getCarIdFromRequest(request)
       val filename = handleUpload(request, car_id)
@@ -145,7 +144,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
   def handleUpload( request: Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]], 
       car_id:Long ) : Option[String] = {
     request.body.file("img").map { picture =>
-      import java.io.File
+
       val filename = picture.filename
       val contentType = picture.contentType
       val imagePath = current.configuration.getString("car.imageLocation").getOrElse("")
@@ -187,7 +186,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
    * @param int Id
    *
    */
-  def removeImage(id: Long) = Action {
+  def removeImage(id: Long) = Authenticated {
     var json = ""
 
     val car = repo.get(id).map { car =>
@@ -217,7 +216,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
 
   def remove = TODO
 
-  def removeMedia(id: Long) = Action.async {
+  def removeMedia(id: Long) = Authenticated.async {
     repomedia.get(id).map { media =>
       media.getOrElse(NotFound("This was not found. Sorry.")) // TODO better 404
       if (Media.removePhiMedia(media.get)) {
@@ -231,6 +230,12 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
         Ok(Json.toJson(json))
       }
     }
+  }
+
+  def getMediaByCarId(id:Long) = Authenticated {
+    Ok(
+      Json.toJson(repomedia.getByCarId(id))
+    )
   }
 
   def getCarIdFromRequest(request: play.api.mvc.Request[play.api.mvc.MultipartFormData[play.api.libs.Files.TemporaryFile]]) :Long = {

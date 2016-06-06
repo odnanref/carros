@@ -21,22 +21,22 @@ import javax.inject._
 
 import services.Authenticated
 
-class NewsletterController @Inject() (repo: NewsletterRepository, val messagesApi: MessagesApi)
-                          (implicit ec: ExecutionContext) extends Controller with I18nSupport {
+class NotificationController @Inject() (repo: NewsletterRepository, val messagesApi: MessagesApi)
+                                     (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   def index = Authenticated.async {
     val lista = repo.list()
     lista.map( i =>
-      Ok(views.html.admin.newsletter.list(i))
+      Ok(views.html.admin.notification.list(i))
     )
   }
 
   def addView = Authenticated {
-    Ok(views.html.admin.newsletter.add())
+    Ok(views.html.admin.notification.add())
   }
 
   def publicAdd = Action {
-    Ok(views.html.newsletter())
+    Ok(views.html.notification())
   }
 
   def save() = Authenticated.async { implicit request =>
@@ -44,7 +44,7 @@ class NewsletterController @Inject() (repo: NewsletterRepository, val messagesAp
     NewsletterForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
-        Ok(views.html.admin.newsletter.add())
+        Ok(views.html.admin.notification.add())
       },
       news => {
         repo.insert(Newsletter(None, news.email, "active", request.remoteAddress))
@@ -61,7 +61,7 @@ class NewsletterController @Inject() (repo: NewsletterRepository, val messagesAp
     NewsletterForm.updateform.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
-        Ok(views.html.admin.newsletter.update(errorForm))
+        Ok(views.html.admin.notification.update(errorForm))
       },
       news => {
         val newsobj = new Newsletter(news.id, news.email, news.state, news.address)
@@ -86,7 +86,7 @@ class NewsletterController @Inject() (repo: NewsletterRepository, val messagesAp
           "email" -> news.get.email
         )
         val id = news.get.id.get
-        Ok(views.html.admin.newsletter.update(NewsletterForm.updateform.bind(data))) // FIXME this is not ok
+        Ok(views.html.admin.notification.update(NewsletterForm.updateform.bind(data))) // FIXME this is not ok
       }
     }
   }

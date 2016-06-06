@@ -1,7 +1,7 @@
 @(Car: Carro, medias: List[Media])
 
 
-@main(new Main(Car.name, Car.description, Car.img, Car.keywords)) {
+@mainWebsite(new Main(Car.name, Car.description, Car.img, Car.keywords)) {
 	<div class="container">
 	    <div class="row">
 	    	<div class="col-md-5">
@@ -10,6 +10,7 @@
 	    	</div>
 	    	<div class="cols-xs-6 col-md-4">
 	    		<h1>@Car.name</h1>
+				<h2>Ano @Car.year</h2>
 	    		<span>@Car.description</span>
 	    	</div>
 	    	<div class="cols-xs-6 col-md-4">

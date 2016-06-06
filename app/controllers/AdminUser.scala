@@ -7,19 +7,19 @@ import play.api.i18n._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.Play.current // for getting the current application path
+import play.api.Play.current
 import play.api.libs.json.Json
 import play.api.libs.json._
-
 import models._
 import dal._
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{Success, Failure}
-
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import java.io.File
-
+import java.security.MessageDigest
 import javax.inject._
+
+import services.Authenticated
 
 class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
@@ -31,11 +31,11 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
     )
   }
 
-  def addView = Action {
+  def addView = Authenticated {
     Ok(views.html.admin.user.add(UserForm.form))
   }
 
-  def save() = Action.async { implicit request =>
+  def save() = Authenticated.async { implicit request =>
         
     UserForm.form.bindFromRequest.fold(
       // if any error in submitted data
@@ -43,7 +43,7 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
         Ok(views.html.admin.user.add(errorForm))
       },
       user => {
-        repo.insert(new User(None, user.username, user.password, user.email))
+        repo.insert(new User(None, user.username, User.crypt(user.password), user.email))
         .map { _ =>
           // If successful, we simply redirect to the index page.
           Redirect(routes.AdminUser.index)
@@ -53,19 +53,18 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
     )
   }
 
-  def update() = Action.async { implicit request =>
-
-    UserForm.form.bindFromRequest.fold(
+  def update() = Authenticated.async { implicit request =>
+    UserForm.updateform.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
-        val id = UserForm.form("id").value.get.toLong
+        val id = UserForm.updateform("id").value.get
         Ok(views.html.admin.user.update(errorForm))
       },
-      user => {        
-        val userobj = new User( Some(user.id.toLong), user.username, user.password, 
-          user.email)
+      user => {
+        val pass = repo.get(user.id).map { k => k.get.password }.toString
+        val userobj = new User(Some(user.id), user.username, pass, user.email)
 
-        repo.edit(user.id.toLong, userobj).map { _ =>
+        repo.edit(user.id, userobj).map { _ =>
           // If successful, we simply redirect to the index page.
           Redirect(routes.AdminUser.index)
         }
@@ -73,24 +72,54 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
     )
   }
 
-  def editView(id:Long) = Action.async {
+  def editView(id:Long) = Authenticated.async {
     
     repo.get(id).map { user =>
       // TODO better 404
       if (user == None) {
-        NotFound
+        NotFound("Utilizador não encontrado.")
       } else {
-
-      val data = Map(
-        "id" -> user.get.id.get.toString, 
-        "username" -> user.get.username,
-        "password" -> user.get.password,
-        "email" -> user.get.email
-        )
-      val id = user.get.id.get.toLong
-      Ok(views.html.admin.user.update(UserForm.form.bind(data)))
+        val data = Map(
+          "id" -> user.get.id.get.toString,
+          "username" -> user.get.username,
+          "email" -> user.get.email
+          )
+        val id = user.get.id.get.toLong
+        Ok(views.html.admin.user.update(UserForm.updateform.bind(data)))
       }
-      // TODO make this show a not found personalised page
     }
   }
+
+  /**
+    * View for the login front page
+    *
+    * @return
+    */
+  def loginView() = Action {
+    Ok(views.html.admin.user.login())
+  }
+
+  /**
+    * authenticate method to avaliate user submited login and password
+    *
+    * @return
+    */
+  def loginAuth() = Action.async { implicit request =>
+    val email :String = request.body.asFormUrlEncoded.get("username")(0).mkString
+    val pass :Option[String] = request.getQueryString("password")
+
+    repo.checkAuth(email, User.crypt(pass.getOrElse(""))) map {
+      user =>
+        if (user == None) {
+          Unauthorized("Não autorizado. Thy shall not pass.")
+        } else {
+          Redirect("/admin/carro").withSession("user" -> "admin")
+        }
+    }
+  }
+
+  def logout() = Authenticated {
+    Redirect("/").withNewSession
+  }
+
 }

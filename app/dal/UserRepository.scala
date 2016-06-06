@@ -1,15 +1,15 @@
 package dal
 
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
+
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
-
 import models._
+import play.api.mvc.Result
 
 import scala.concurrent._
 import scala.concurrent.duration._
-
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 /**
  * A repository for Media.
@@ -18,6 +18,7 @@ import scala.util.{Success, Failure}
  */
 @Singleton
 class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+
   // We want the JdbcProfile for this provider
   private val dbConfig = dbConfigProvider.get[JdbcProfile]
 
@@ -107,6 +108,17 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   def erase(id:Long) : Boolean = {
     dbConfig.db.run(user.filter(_.id === id).delete)
     true
+  }
+
+  /**
+    * Check for autentication credentials in the database
+    *
+    * @param email
+    * @param pass
+    * @return
+    */
+  def checkAuth(email: String, pass: String): Future[Option[User]] = {
+    db.run(user.filter( x => ( x.email === email && x.password === pass) ).result.headOption)
   }
 
 }

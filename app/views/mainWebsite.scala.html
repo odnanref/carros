@@ -3,7 +3,23 @@
 <html lang="en">
     <head>
         <title>@Main.title</title>
+        <meta name="description" content="@Main.description">
+	    <meta name="author" content="Odnanref">
+	    <meta name="keywords" content="@Main.keywords" />
 
+	    <meta property="og:title" content="@Main.title" />
+	    <meta property="og:description" content="@Main.description" />
+	    <meta property="og:type" content="website" />
+	    <meta property="og:url" content="@Main.url" />
+	    <meta property="og:image" content="@routes.Assets.at(Main.img)" />
+
+	    <meta name="twitter:card" content="summary_large_image">
+	    <meta name="twitter:site" content="@@netriver">
+	    <meta name="twitter:creator" content="@@netriver">
+	    <meta name="twitter:title" content="@Main.title">
+	    <meta name="twitter:description" content="@Main.description">
+	    <meta name="twitter:image:src" content="@routes.Assets.at(Main.img)">
+	    <meta name="twitter:domain" content="@Main.url">
 
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
@@ -36,17 +52,19 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Administração</a>
+          <a class="navbar-brand" href="#">[CARROS]</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="@routes.NewsletterController.publicAdd()">Newsletter</a></li>
+                <li><a href="">Notificação Alerta</a></li>
+                <li><a href="">Ver Carros</a></li>
+            </ul>
           <form class="navbar-form navbar-right">
             <div class="form-group">
-              <input type="text" placeholder="Email" class="form-control">
+              <input type="text" name="search" placeholder="Procurar" class="form-control">
             </div>
-            <div class="form-group">
-              <input type="password" placeholder="Password" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-success">Sign in</button>
+            <button type="submit" class="btn btn-success">Procurar</button>
           </form>
         </div><!--/.navbar-collapse -->
       </div>

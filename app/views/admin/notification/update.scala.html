@@ -1,0 +1,23 @@
+@(news: Form[NotificationUpdateForm])(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+<div class="container">
+    <h1>Alterar</h1>
+    @form(routes.NotificationController.save()) {
+    <input type="hidden" name="id" value='@news("id").value' >
+    @inputText( news("email"), '_label -> "Email" , 'id -> "email", 'size -> 20)
+    @inputText( news("make"), '_label -> "Marca" , 'id -> "make", 'size -> 20)
+    @inputText( news("model"), '_label -> "Modelo" , 'id -> "model", 'size -> 20)
+
+    <div class="buttons">
+        <input type="submit" value="Guardar" class="btn"/>
+    </div>
+    }
+
+    @admin.user.nav()
+
+</div>
+
+}

@@ -1,0 +1,39 @@
+@(lista: Seq[models.Notification])
+
+@import helper._
+
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+  <div class="container">
+    <table class="table table-hover table-bordered">
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Model</th>
+        <th>Marca</th>
+        <th>&nbsp;</th>
+      </tr>
+      @lista.map { news =>
+      <tr>
+        <td>
+          <a href="@routes.NotificationController.editView(news.id.get)">@news.id</a>
+        </td>
+        <td>@news.email</td>
+        <td>@news.model</td>
+        <td>@news.make</td>
+        <td><a href="javascript:apagar(@news.id);">apagar</a></td>
+      </tr>
+      }
+    </table>
+  </div>
+
+  @admin.user.nav()
+
+<script type="text/javascript">
+function apagar(id) {
+  if (confirm("Apagar o email?")) {
+    alert("apagado");// FIXME
+   }
+}
+</script>
+}

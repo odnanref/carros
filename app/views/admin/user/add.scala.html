@@ -1,4 +1,4 @@
-@(user: Form[UserFormData])(implicit messages: Messages)
+@(user: Form[User])(implicit messages: Messages)
 
 @import helper._
 
@@ -8,7 +8,10 @@
 	@form(routes.AdminUser.save()) {
 		<input type="hidden" name="id" value='@user("id").value' >
 		@inputText( user("username"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
-		@inputText( user("password"), '_label -> "Senha" , 'id -> "password", 'size -> 20)
+		@inputPassword( user("password"), '_label -> "Senha" , 'id -> "password", 'size -> 20)
+		<span>Confirmar senha</span>
+		<input type="password" value="" id="confirmpassword" 
+		onchange="javascript:confirmPassword();"/><br/>
 		@inputText( user("email"), '_label -> "E-Mail" , 'id -> "email", 'size -> 20)
 		
 		<div class="buttons">
@@ -16,8 +19,22 @@
 		</div>
 	}
 
-	@admin.nav()
+	@admin.user.nav()
 
 	</div>
+
+	<script type="text/javascript">
+		function confirmPassword() {
+			if (document.getElementById("password").value === document.getElementById("confirmpassword").value) {
+				$("#password").css("background-color", "green");
+				$("#confirmpassword").css("background-color", "green");
+				return true;
+			} else {
+				$("#password").css("background-color", "red");
+				$("#confirmpassword").css("background-color", "red");
+			}
+			return false;
+		}
+	</script>
 	
 }

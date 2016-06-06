@@ -1,0 +1,21 @@
+@()(implicit messages: Messages)
+
+@import helper._
+
+@main(new Main("Car Dealers", "Compra e venda de carros", "logo.png", "carro, compra, venda")) {
+<div class="container">
+    <h1>Adicionar</h1>
+    @form(routes.NotificationController.save()) {
+    E-Mail:&nbsp;<input type="email" id="email" name="email" size="20" />
+    Marca:&nbsp;<input type="text" id="make" name="make" size="20" />
+    Modelo:&nbsp;<input type="text" id="model" name="model" size="20" />
+    <div class="buttons">
+        <input type="submit" value="Adicionar" class="btn"/>
+    </div>
+    }
+
+    @admin.user.nav()
+
+</div>
+
+}

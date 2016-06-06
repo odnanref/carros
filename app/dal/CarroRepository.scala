@@ -37,6 +37,9 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     /** The name column */
     def name = column[String]("name")
 
+    /** The name column */
+    def year = column[Int]("year")
+
     /** The description column */
     def description = column[String]("description")
 
@@ -56,7 +59,7 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
      * In this case, we are simply passing the id, name and page parameters to the Person case classes
      * apply and unapply methods.
      */ 
-    def * = (id, name, description, img, keywords, state) <> 
+    def * = (id, name, year, description, img, keywords, state) <>
       ((Carro.apply _).tupled, Carro.unapply)
     
   }
@@ -72,16 +75,16 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
    * This is an asynchronous operation, it will return a future of the created car, which can be used to obtain the
    * id for that person.
    */
-  def create(name: String, description: String, img:String, keywords: String, state: String): Future[Carro] = db.run {
+  def create(name: String, description: String, year:Int, img:String, keywords: String, state: String): Future[Carro] = db.run {
     // We create a projection of just the name and age columns, since we're not inserting a value for the id column
-    (carro.map(p => (p.name, p.description, p.img, p.keywords, p.state))
+    (carro.map(p => (p.name, p.year, p.description, p.img, p.keywords, p.state))
       // Now define it to return the id, because we want to know what id was generated for the car
       returning carro.map(_.id)
       // And we define a transformation for the returned value, which combines our original parameters with the
       // returned id
-      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5))
+      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5, nameAge._6))
     // And finally, insert the car into the database
-    ) += (name, description, img, keywords, state)
+    ) += (name, year, description, img, keywords, state)
   }
 
   /** Insert a new car. */
