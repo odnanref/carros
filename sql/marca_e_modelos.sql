@@ -1,11 +1,14 @@
+DROP TABLE marca_modelo;
 
-CREATE TABLE marca (
-	id auto_increment primary key,
+DROP TABLE marca;
+
+CREATE TABLE IF NOT EXISTS marca (
+	id int auto_increment primary key,
 	descricao varchar(30) not null
 );
 
-CREATE TABLE marca_modelo (
-	id auto_increment primary key,
+CREATE TABLE IF NOT EXISTS marca_modelo (
+	id int auto_increment primary key,
 	marca_id int not null,
 	descricao varchar(30) not null,
 	foreign key (marca_id) references marca(id)
@@ -120,7 +123,6 @@ insert into marca (descricao) values('VOLVO');
 insert into marca (descricao) values('WALK');
 insert into marca (descricao) values('WILLYS');
 
--------------------------------------------------------------------------------------------
 
 insert into marca_modelo (marca_id, descricao) values('1','ZAFIRA');
 insert into marca_modelo (marca_id, descricao) values('1','RAMONA');

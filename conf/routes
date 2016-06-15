@@ -35,8 +35,17 @@ GET     /admin/newsletter/remove/:id    controllers.NewsletterController.remove(
 GET     /admin/newsletter           controllers.NewsletterController.index
 POST    /admin/newsletter/update    controllers.NewsletterController.update
 GET     /admin/newsletter/:id       controllers.NewsletterController.editView(id:Long)
-GET    /newsletter/add              controllers.NewsletterController.publicAdd
+GET     /newsletter/add              controllers.NewsletterController.publicAdd
 POST    /newsletter/add             controllers.NewsletterController.publicAdd
+
+GET     /admin/notification/add       controllers.NotificationController.addView
+POST    /admin/notification/save      controllers.NotificationController.save
+GET     /admin/notification/remove/:id    controllers.NotificationController.remove(id:Long)
+GET     /admin/notification           controllers.NotificationController.index
+POST    /admin/notification/update    controllers.NotificationController.update
+GET     /admin/notification/:id       controllers.NotificationController.editView(id:Long)
+GET     /notification/add              controllers.NotificationController.publicAdd
+POST    /notification/add             controllers.NotificationController.publicAdd
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

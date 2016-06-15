@@ -21,7 +21,7 @@ import javax.inject._
 
 import services.Authenticated
 
-class NotificationController @Inject() (repo: NewsletterRepository, val messagesApi: MessagesApi)
+class NotificationController @Inject() (repo: NotificationRepository, val messagesApi: MessagesApi)
                                      (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   def index = Authenticated.async {
@@ -41,13 +41,13 @@ class NotificationController @Inject() (repo: NewsletterRepository, val messages
 
   def save() = Authenticated.async { implicit request =>
 
-    NewsletterForm.form.bindFromRequest.fold(
+    NotificationForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
         Ok(views.html.admin.notification.add())
       },
       news => {
-        repo.insert(Newsletter(None, news.email, "active", request.remoteAddress))
+        repo.insert(Notification(None, news.email, news.make, news.model))
           .map { _ =>
             // If successful, we simply redirect to the index page.
             Redirect(routes.Application.index)
@@ -58,17 +58,17 @@ class NotificationController @Inject() (repo: NewsletterRepository, val messages
   }
 
   def update() = Authenticated.async { implicit request =>
-    NewsletterForm.updateform.bindFromRequest.fold(
+    NotificationForm.updateform.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
         Ok(views.html.admin.notification.update(errorForm))
       },
       news => {
-        val newsobj = new Newsletter(news.id, news.email, news.state, news.address)
+        val newsobj = new Notification(news.id, news.email, news.model, news.make)
 
         repo.edit(news.id.get, newsobj).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.NewsletterController.index)
+          Redirect(routes.NotificationController.index)
         }
       }
     )
@@ -83,10 +83,12 @@ class NotificationController @Inject() (repo: NewsletterRepository, val messages
       } else {
         val data = Map(
           "id" -> news.get.id.get.toString,
-          "email" -> news.get.email
+          "email" -> news.get.email,
+          "make" -> news.get.make.toString,
+          "model" -> news.get.model.toString
         )
         val id = news.get.id.get
-        Ok(views.html.admin.notification.update(NewsletterForm.updateform.bind(data))) // FIXME this is not ok
+        Ok(views.html.admin.notification.update(NotificationForm.updateform.bind(data))) // FIXME this is not ok
       }
     }
   }

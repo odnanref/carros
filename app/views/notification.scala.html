@@ -1,0 +1,16 @@
+
+@mainWebsite(new Main("Notificação/Alerta", "Notificação/Alerta", "logo.png", "notificação, alerta", "/newsletter/add")) {
+    <h1>Receba um aviso quando encontrarmos no seu correio  eletrônico</h1>
+    <form action="@routes.NotificationController.save()" method="POST">
+        <span for="email">E-Mail</span>
+        <input type="email" name="email" id="email" />
+
+        <span for="make">Marca</span>
+        <input type="text" name="make" id="make" />
+
+        <span for="model">Modelo</span>
+        <input type="text" name="model" id="model" />
+
+        <input type="submit" name="save" value="Registar" class="btn btn-default"/>
+    </form>
+}
