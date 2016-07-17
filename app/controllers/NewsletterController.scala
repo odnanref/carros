@@ -50,7 +50,7 @@ class NewsletterController @Inject() (repo: NewsletterRepository, val messagesAp
         repo.insert(Newsletter(None, news.email, "active", request.remoteAddress))
           .map { _ =>
             // If successful, we simply redirect to the index page.
-            Redirect(routes.Application.index)
+            Ok(views.html.newsletter_success())
           }
 
       }

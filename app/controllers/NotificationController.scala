@@ -21,7 +21,8 @@ import javax.inject._
 
 import services.Authenticated
 
-class NotificationController @Inject() (repo: NotificationRepository, val messagesApi: MessagesApi)
+class NotificationController @Inject() (repo: NotificationRepository, repoMarca: MarcaRepository,
+                                        repoModelo:ModeloRepository, val messagesApi: MessagesApi)
                                      (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   def index = Authenticated.async {
@@ -35,8 +36,15 @@ class NotificationController @Inject() (repo: NotificationRepository, val messag
     Ok(views.html.admin.notification.add())
   }
 
-  def publicAdd = Action {
-    Ok(views.html.notification())
+  def publicAdd = Action.async {
+    // will be directly iterated for select combo box
+    repoMarca.list().flatMap {
+      brands =>
+    // should be iterated to json in the html code
+      repoModelo.list().map { models =>
+        Ok(views.html.notification(brands, models))
+      }
+    }
   }
 
   def save() = Authenticated.async { implicit request =>
@@ -50,7 +58,7 @@ class NotificationController @Inject() (repo: NotificationRepository, val messag
         repo.insert(Notification(None, news.email, news.make, news.model))
           .map { _ =>
             // If successful, we simply redirect to the index page.
-            Redirect(routes.Application.index)
+            Ok(views.html.notification_success())
           }
 
       }
@@ -94,5 +102,29 @@ class NotificationController @Inject() (repo: NotificationRepository, val messag
   }
 
   def remove(id:Long) = TODO
+
+  implicit val responseFormat = Json.format[JsonResponse]
+  implicit val ReturnModelFormat = Json.format[Modelo]
+  implicit val ReturnMarcaFormat = Json.format[Marca]
+
+  def getModelByBrand(id:Long) = Action.async {
+    repoModelo.getMarcaByModelo(id).map {
+      lista =>
+        if (lista != None ) {
+          Ok(Json.toJson(lista))
+        } else {
+          val ret = new JsonResponse("erro", "Sem resultados")
+          Ok(Json.toJson(ret))
+        }
+    }
+  }
+
+  def getBrands() = Action.async {
+    repoMarca.list().map {
+      lista =>
+      val ret = Json.toJson(lista)
+        Ok(ret)
+    }
+  }
 
 }

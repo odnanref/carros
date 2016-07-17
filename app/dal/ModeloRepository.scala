@@ -44,7 +44,7 @@ class ModeloRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(impli
       * In this case, we are simply passing the id, name and page parameters to the Person case classes
       * apply and unapply methods.
       */
-    def * = (id, marca_id , descricao) <>
+    def * = (id, marca , descricao) <>
       ((Modelo.apply _).tupled, Modelo.unapply)
 
   }
@@ -60,16 +60,16 @@ class ModeloRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(impli
     * This is an asynchronous operation, it will return a future of the created car, which can be used to obtain the
     * id for that person.
     */
-  def create(descricao:String, marca_id): Future[Modelo] = db.run {
+  def create(descricao:String, marca:Long): Future[Modelo] = db.run {
     // We create a projection of just the name and age columns, since we're not inserting a value for the id column
-    (NotiRepo.map(p => (p.descricao, p.marca_id))
+    (NotiRepo.map(p => (p.marca, p.descricao))
       // Now define it to return the id, because we want to know what id was generated for the car
       returning NotiRepo.map(_.id)
       // And we define a transformation for the returned value, which combines our original parameters with the
       // returned id
       into ((nameAge, id) => Modelo(id, nameAge._1, nameAge._2))
       // And finally, insert the car into the database
-      ) += (descricao, marca_id)
+      ) += (marca, descricao)
   }
 
   /** Insert a new . */
@@ -97,8 +97,8 @@ class ModeloRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(impli
     dbConfig.db.run(NotiRepo.filter(_.id === id).result.headOption)
   }
 
-  def getMarcaByModelo(id:Long): Future[Option[Modelo]] = {
-    dbConfig.db.run(NotiRepo.filter(_.marca_id === id).result.headOption)
+  def getMarcaByModelo(id:Long): Future[Seq[Modelo]] = {
+    dbConfig.db.run(NotiRepo.filter(_.marca === id).result)
   }
 
 }

@@ -66,7 +66,7 @@ class MarcaRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
       returning NotiRepo.map(_.id)
       // And we define a transformation for the returned value, which combines our original parameters with the
       // returned id
-      into ((nameAge, id) => Marca(id, nameAge._1))
+      into ((desc, id) => Marca(id, desc))
       // And finally, insert the car into the database
       ) += (descricao)
   }

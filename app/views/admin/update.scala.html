@@ -19,6 +19,17 @@
 		 <span>@car("img").value</span>
 		 <a onClick='javascript:DeleteImage(@car("id").value);' class="btn">apagar</a><!-- Delete the image link -->
 		@inputText(car("keywords"), '_label -> "Palavras chave")
+
+		<span for="make">Marca</span>
+		<select name="make" id="make" onchange="onBrandChange();">
+			<option value="0">&nbsp;</option>
+		</select>
+
+		<span for="model">Modelo</span>
+		<select name="model" id="model">
+			<option value="0">&nbsp;</option>
+		</select>
+
 		@select(
 			car("state"),
 			options("active" -> "Activo", "unactive" -> "Inactivo"),
@@ -57,7 +68,7 @@
 
 	</div>
 	
-	<script type="text/javascript">
+<script type="text/javascript">
 	function DeleteImage(id) {
 		if (confirm("Eliminar a imagem?")) { // confirm image delete?
 			// if yes
@@ -145,5 +156,10 @@ $('#uploadimg').click(function(){
 $('#divuploadimg').hide();
 loadMedia(@car("id").value);
 
-	</script>
+brands.forEach(function(ent) {
+   $("#make").append("<option value=\"" + ent.id + "\">" + ent.descricao + "</option>");
+});
+
+getModelsForBrandLocal($('#make').val());
+</script>
 }

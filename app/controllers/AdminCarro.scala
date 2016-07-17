@@ -20,8 +20,9 @@ import javax.inject._
 
 import services.Authenticated
 
-class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, val messagesApi: MessagesApi)
-                                 (implicit ec: ExecutionContext) extends Controller with I18nSupport {
+class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
+                            val messagesApi: MessagesApi)
+                           (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   implicit val responseFormat = Json.format[JsonResponse]
   implicit val MediaFormat = Json.format[Media]
@@ -108,7 +109,9 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository, v
           )
         val id = car.get.id.get.toLong
         val medias = repomedia.getByCarId(id)
+
         Ok(views.html.admin.update(CarroForm.form.bind(data), medias))
+
       }
       // TODO make this show a not found personalised page
     }
