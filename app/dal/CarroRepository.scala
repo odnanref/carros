@@ -19,7 +19,7 @@ import scala.util.{Success, Failure}
 @Singleton
 class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   // We want the JdbcProfile for this provider
-  private val dbConfig = dbConfigProvider.get[JdbcProfile]
+  protected val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   // These imports are important, the first one brings db into scope, which will let you do the actual db operations.
   // The second one brings the Slick DSL into scope, which lets you define the table and other queries.
@@ -51,6 +51,8 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
 
     def state = column[String]("state")
 
+    def model = column[Long]("model")
+
     /**
      * This is the tables default "projection".
      *
@@ -59,9 +61,17 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
      * In this case, we are simply passing the id, name and page parameters to the Person case classes
      * apply and unapply methods.
      */ 
-    def * = (id, name, year, description, img, keywords, state) <>
+    def * = (id, name, year, description, img, keywords, state, model) <>
       ((Carro.apply _).tupled, Carro.unapply)
     
+  }
+
+  val PAGESIZE: Int = 10
+
+  implicit class QueryExtensions[T, E, S[E]](val q: Query[T, E, S]) {
+    def page(no: Int, pageSize: Int): Query[T, E, S] = {
+      q.drop((no - 1) * pageSize).take(pageSize)
+    }
   }
 
   /**
@@ -75,16 +85,17 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
    * This is an asynchronous operation, it will return a future of the created car, which can be used to obtain the
    * id for that person.
    */
-  def create(name: String, description: String, year:Int, img:String, keywords: String, state: String): Future[Carro] = db.run {
+  def create(name: String, description: String, year:Int, img:String, keywords: String, state: String, model:Long) :
+  Future[Carro] = db.run {
     // We create a projection of just the name and age columns, since we're not inserting a value for the id column
-    (carro.map(p => (p.name, p.year, p.description, p.img, p.keywords, p.state))
+    (carro.map(p => (p.name, p.year, p.description, p.img, p.keywords, p.state, p.model))
       // Now define it to return the id, because we want to know what id was generated for the car
       returning carro.map(_.id)
       // And we define a transformation for the returned value, which combines our original parameters with the
       // returned id
-      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5, nameAge._6))
+      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5, nameAge._6, nameAge._7))
     // And finally, insert the car into the database
-    ) += (name, year, description, img, keywords, state)
+    ) += (name, year, description, img, keywords, state, model)
   }
 
   /** Insert a new car. */
@@ -101,24 +112,44 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     val carToUpdate: Carro = car.copy(Some(id))
     db.run(carro.filter(_.id === id).update(carToUpdate)).map(_ => ())
   }
+
   /**
    * List all the cars in the database.
    */
-  def list(): Future[Seq[Carro]] = db.run {
-    carro.result
+  def list(page: Int): Future[Seq[Carro]] = db.run {
+    carro.sortBy(_.name).page(page, PAGESIZE).result
+  }
+
+  /**
+    * Say how many there are
+    */
+  def count(): Future[Int] = db.run {
+    carro.length.result
   }
 
   /**
    * List all the cars in the database.
    */
-  def listActive(): Future[Seq[Carro]] = db.run {
-    carro.filter(_.state === "active").result
+  def listActive(page: Int): Future[Seq[Carro]] = db.run {
+    carro.filter(_.state === "active").page(page, PAGESIZE).result
   }
 
+  /**
+    * Get the specific Car
+    *
+    * @param id
+    * @return Future[Option[Carro]]
+    */
   def get(id: Long): Future[Option[Carro]] = {
     dbConfig.db.run(carro.filter(_.id === id).result.headOption)
   }
 
+  /**
+    * Get the main image for the car
+    *
+    * @param id
+    * @return string
+    */
   def getImage( id:Long) :String = {
     var result:String = "" 
     if (id <= 0) {
@@ -141,4 +172,12 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     db.run(updateAction)
   }
 
+  /**
+    * Delete the ID from the database
+    *
+    * @param id
+    */
+  def remove(id:Long): Unit = {
+    db.run(carro.filter(_.id === id ).delete)
+  }
 }
