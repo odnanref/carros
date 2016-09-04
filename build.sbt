@@ -4,7 +4,7 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.22"
 
@@ -16,11 +16,11 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-"com.typesafe.play" %% "play-slick" % "1.1.1",
-"com.typesafe.play" %% "play-slick-evolutions" % "1.1.1"
+"com.typesafe.play" %% "play-slick" % "2.0.0",
+"com.typesafe.play" %% "play-slick-evolutions" % "2.0.0"
 )
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
+//libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.21"
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.21"
