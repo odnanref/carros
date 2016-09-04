@@ -76,7 +76,7 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
     
     repo.get(id).map { user =>
       // TODO better 404
-      if (user == None) {
+      if (user.isEmpty) {
         NotFound("Utilizador não encontrado.")
       } else {
         val data = Map(
@@ -106,12 +106,13 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
     */
   def loginAuth() = Action.async { implicit request =>
     val email :String = request.body.asFormUrlEncoded.get("username")(0).mkString
-    val pass :Option[String] = request.getQueryString("password")
+    val pass :String = request.body.asFormUrlEncoded.get("password")(0).mkString
 
-    repo.checkAuth(email, User.crypt(pass.getOrElse(""))) map {
+    repo.checkAuth(email, User.crypt(pass)) map {
       user =>
-        if (user == None) {
-          Unauthorized("Não autorizado. Thy shall not pass.")
+        if (user.isEmpty) {
+          //Unauthorized("Não autorizado. Thy shall not pass.")
+          Redirect("/admin/user/login")
         } else {
           Redirect("/admin/carro").withSession("user" -> "admin")
         }
