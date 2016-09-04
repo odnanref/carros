@@ -16,7 +16,7 @@ import scala.concurrent._
 @Singleton
 class NotificationRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
   // We want the JdbcProfile for this provider
-  private val dbConfig = dbConfigProvider.get[JdbcProfile]
+  protected val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   // These imports are important, the first one brings db into scope, which will let you do the actual db operations.
   // The second one brings the Slick DSL into scope, which lets you define the table and other queries.
@@ -49,6 +49,14 @@ class NotificationRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)
     def * = (id, email, make, model) <>
       ((Notification.apply _).tupled, Notification.unapply)
 
+  }
+
+  val PAGESIZE: Int = 10
+
+  implicit class QueryExtensions[T, E, S[E]](val q: Query[T, E, S]) {
+    def page(no: Int, pageSize: Int): Query[T, E, S] = {
+      q.drop((no - 1) * pageSize).take(pageSize)
+    }
   }
 
   /**
@@ -91,8 +99,15 @@ class NotificationRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)
   /**
     * List all the cars in the database.
     */
-  def list(): Future[Seq[Notification]] = db.run {
-    NotiRepo.result
+  def list(page: Int = 1): Future[Seq[Notification]] = db.run {
+    NotiRepo.page(page, PAGESIZE).result
+  }
+
+  /**
+    * Say how many there are
+    */
+  def count(): Future[Int] = db.run {
+    NotiRepo.length.result
   }
 
   def get(id: Long): Future[Option[Notification]] = {

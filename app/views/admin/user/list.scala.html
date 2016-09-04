@@ -1,4 +1,4 @@
-@(lista: Seq[models.User])
+@(lista: Seq[models.User], total: Int)
 
 @import helper._
 
@@ -24,6 +24,25 @@
 	}
 		</table>
 	</div>
+
+<nav aria-label="Page navigation">
+	<ul class="pagination">
+		<li>
+			<a href="#" aria-label="Previous">
+				<span aria-hidden="true">&laquo;</span>
+			</a>
+		</li>
+		@for( i <- 1 to total ) {
+		<li><a href="@routes.AdminUser.index(i)">@i</a></li>
+		}
+		<li>
+			<a href="#" aria-label="Next">
+				<span aria-hidden="true">&raquo;</span>
+			</a>
+		</li>
+	</ul>
+</nav>
+
 
 @admin.user.nav()
 

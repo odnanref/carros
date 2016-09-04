@@ -24,10 +24,12 @@ import services.Authenticated
 class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
                                  (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
-  def index = Action.async {
-    val lista = repo.list()
-    lista.map( i =>
-      Ok(views.html.admin.user.list(i))
+  def index(page: Int = 1) = Action.async {
+    val lista = repo.list(page)
+    lista.flatMap( i =>
+      repo.count().map { total =>
+        Ok(views.html.admin.user.list(i, total/repo.PAGESIZE))
+      }
     )
   }
 
@@ -46,7 +48,7 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
         repo.insert(new User(None, user.username, User.crypt(user.password), user.email))
         .map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.AdminUser.index)
+          Redirect(routes.AdminUser.index(1))
         }
         
       }
@@ -66,7 +68,7 @@ class AdminUser @Inject() (repo: UserRepository, val messagesApi: MessagesApi)
 
         repo.edit(user.id, userobj).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.AdminUser.index)
+          Redirect(routes.AdminUser.editView(user.id))
         }
       }
     )

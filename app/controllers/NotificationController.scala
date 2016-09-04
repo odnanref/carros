@@ -25,10 +25,12 @@ class NotificationController @Inject() (repo: NotificationRepository, repoMarca:
                                         repoModelo:ModeloRepository, val messagesApi: MessagesApi)
                                      (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
-  def index = Authenticated.async {
-    val lista = repo.list()
-    lista.map( i =>
-      Ok(views.html.admin.notification.list(i))
+  def index(page: Int) = Authenticated.async {
+    val lista = repo.list(page)
+    lista.flatMap( i =>
+      repo.count().map { total =>
+        Ok(views.html.admin.notification.list(i, total/repo.PAGESIZE))
+      }
     )
   }
 
@@ -76,7 +78,7 @@ class NotificationController @Inject() (repo: NotificationRepository, repoMarca:
 
         repo.edit(news.id.get, newsobj).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.NotificationController.index)
+          Redirect(routes.NotificationController.editView(news.id.getOrElse(0)))
         }
       }
     )

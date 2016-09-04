@@ -21,33 +21,36 @@ POST  	/admin/media/upload         controllers.AdminCarro.upload()
 GET  	/admin/media/get/:id        controllers.AdminCarro.getMediaByCarId(id:Long)
 GET     /admin/media/remove/:id     controllers.AdminCarro.removeMedia(id :Long)
 
-GET		/admin/user					controllers.AdminUser.index
 GET     /admin/user/login           controllers.AdminUser.loginView
 POST    /admin/user/auth            controllers.AdminUser.loginAuth
-GET		/admin/user/add					controllers.AdminUser.addView
+GET		/admin/user/add				controllers.AdminUser.addView
 POST	/admin/user					controllers.AdminUser.save
-GET		/admin/user/:id				controllers.AdminUser.editView(id:Long)
+GET		/admin/user/update/:id		controllers.AdminUser.editView(id:Long)
 POST	/admin/user/update			controllers.AdminUser.update
+GET		/admin/user					controllers.AdminUser.index(page: Int = 1)
+GET		/admin/user/:page			controllers.AdminUser.index(page: Int)
 
 GET     /admin/logout               controllers.AdminUser.logout
 
 GET     /admin/newsletter/add       controllers.NewsletterController.addView
 POST    /admin/newsletter/save      controllers.NewsletterController.save
 GET     /admin/newsletter/remove/:id    controllers.NewsletterController.remove(id:Long)
-GET     /admin/newsletter           controllers.NewsletterController.index
 POST    /admin/newsletter/update    controllers.NewsletterController.update
-GET     /admin/newsletter/:id       controllers.NewsletterController.editView(id:Long)
+GET     /admin/newsletter/update/:id       controllers.NewsletterController.editView(id:Long)
 GET     /newsletter/add              controllers.NewsletterController.publicAdd
 POST    /newsletter/add             controllers.NewsletterController.publicAdd
+GET     /admin/newsletter           controllers.NewsletterController.index(page: Int = 1)
+GET     /admin/newsletter/:page     controllers.NewsletterController.index(page: Int)
 
 GET     /admin/notification/add       controllers.NotificationController.addView
 POST    /admin/notification/save      controllers.NotificationController.save
 GET     /admin/notification/remove/:id    controllers.NotificationController.remove(id:Long)
-GET     /admin/notification           controllers.NotificationController.index
 POST    /admin/notification/update    controllers.NotificationController.update
-GET     /admin/notification/:id       controllers.NotificationController.editView(id:Long)
-GET     /notification/add              controllers.NotificationController.publicAdd
+GET     /admin/notification/update/:id       controllers.NotificationController.editView(id:Long)
+GET     /notification/add             controllers.NotificationController.publicAdd
 POST    /notification/add             controllers.NotificationController.publicAdd
+GET     /admin/notification           controllers.NotificationController.index(page:Int = 1)
+GET     /admin/notification/:page           controllers.NotificationController.index(page:Int)
 
 GET     /getmodelbybrand/:id         controllers.NotificationController.getModelByBrand(id:Long)
 GET     /getbrands                    controllers.NotificationController.getBrands()

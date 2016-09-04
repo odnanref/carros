@@ -1,4 +1,4 @@
-@(lista: Seq[models.Newsletter])
+@(lista: Seq[models.Newsletter], total:Int)
 
 @import helper._
 
@@ -27,7 +27,25 @@
     </table>
   </div>
 
-  @admin.user.nav()
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    <li>
+      <a href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    @for( i <- 1 to total ) {
+    <li><a href="@routes.NewsletterController.index(i)">@i</a></li>
+    }
+    <li>
+      <a href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+  @admin.newsletter.nav()
 
 <script type="text/javascript">
 function apagar(id) {

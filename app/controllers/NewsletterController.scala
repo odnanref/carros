@@ -24,10 +24,12 @@ import services.Authenticated
 class NewsletterController @Inject() (repo: NewsletterRepository, val messagesApi: MessagesApi)
                           (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
-  def index = Authenticated.async {
-    val lista = repo.list()
-    lista.map( i =>
-      Ok(views.html.admin.newsletter.list(i))
+  def index(page: Int = 1) = Authenticated.async {
+    val lista = repo.list(page)
+    lista.flatMap( i =>
+      repo.count().map { total =>
+        Ok(views.html.admin.newsletter.list(i, total/repo.PAGESIZE))
+      }
     )
   }
 
@@ -68,7 +70,7 @@ class NewsletterController @Inject() (repo: NewsletterRepository, val messagesAp
 
         repo.edit(news.id.get, newsobj).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.NewsletterController.index)
+          Redirect(routes.NewsletterController.editView(news.id.getOrElse(0)))
         }
       }
     )

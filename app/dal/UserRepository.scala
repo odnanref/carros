@@ -20,7 +20,7 @@ import scala.util.{Failure, Success}
 class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
 
   // We want the JdbcProfile for this provider
-  private val dbConfig = dbConfigProvider.get[JdbcProfile]
+  protected val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   // These imports are important, the first one brings db into scope, which will let you do the actual db operations.
   // The second one brings the Slick DSL into scope, which lets you define the table and other queries.
@@ -62,6 +62,14 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
    */
   private val user = TableQuery[UserTable]
 
+  val PAGESIZE: Int = 10
+
+  implicit class QueryExtensions[T, E, S[E]](val q: Query[T, E, S]) {
+    def page(no: Int, pageSize: Int): Query[T, E, S] = {
+      q.drop((no - 1) * pageSize).take(pageSize)
+    }
+  }
+
   /**
    * Create a user
    *
@@ -97,8 +105,8 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   /**
    * List all the cars in the database.
    */
-  def list(): Future[Seq[User]] = db.run {
-    user.result
+  def list(page: Int ): Future[Seq[User]] = db.run {
+    user.page(page, PAGESIZE).result
   }
 
   def get(id: Long): Future[Option[User]] = {
@@ -118,7 +126,13 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
     * @return
     */
   def checkAuth(email: String, pass: String): Future[Option[User]] = {
-    db.run(user.filter( x => ( x.email === email && x.password === pass) ).result.headOption)
+    db.run(user.filter( x => (x.email === email && x.password === pass) ).result.headOption)
   }
 
+  /**
+    * Say how many there are
+    */
+  def count(): Future[Int] = db.run {
+    user.length.result
+  }
 }
