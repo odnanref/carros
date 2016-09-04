@@ -7,13 +7,15 @@ GET     /                           controllers.Application.index
 GET     /carros                     controllers.Application.index
 GET     /carro/:id                  controllers.Application.carro(id :Long)
 
-GET     /admin/carro            	controllers.AdminCarro.index
+GET     /admin/carro/               controllers.AdminCarro.index(page: Int = 1)
 GET     /admin/carro/add            controllers.AdminCarro.addView
 POST    /admin/carro/save	        controllers.AdminCarro.save
 POST    /admin/carro/update	        controllers.AdminCarro.update
 GET     /admin/carro/edit/:id 		controllers.AdminCarro.editView(id :Long)
+GET     /admin/carro/remove/:id     controllers.AdminCarro.remove(id: Long)
 GET     /admin/carro/removeimage/:id 	controllers.AdminCarro.removeImage(id :Long)
 GET     /admin/carro/upload         controllers.AdminCarro.uploadView()
+GET     /admin/carro/:page          controllers.AdminCarro.index(page: Int)
 
 POST  	/admin/media/upload         controllers.AdminCarro.upload()
 GET  	/admin/media/get/:id        controllers.AdminCarro.getMediaByCarId(id:Long)
