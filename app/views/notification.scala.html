@@ -1,7 +1,7 @@
 @(brands: Seq[Marca], models: Seq[Modelo])
 
 @mainWebsite(new Main("Notificação/Alerta", "Notificação/Alerta", "logo.png", "notificação, alerta", "/newsletter/add")) {
-    <h1>Receba um aviso quando encontrarmos no seu correio  eletrônico</h1>
+    <h1>Receba um aviso no seu correio  eletrônico,<br/> quando encontrarmos o seu carro.</h1>
     <form action="@routes.NotificationController.save()" method="POST">
         <span for="email">E-Mail</span>
         <input type="email" name="email" id="email" />
@@ -25,7 +25,7 @@
 
     function onBrandChange() {
         // add models to model select
-        var id = $('#make').val()
+        var id = $('#make').val();
         getModelsForBrandLocal(id);
     }
 
