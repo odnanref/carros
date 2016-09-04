@@ -5,9 +5,11 @@ import play.api.data.Forms._
 
 import play.api.libs.json._
 
-case class Carro(id: Option[Long], name:String, year:Int, description:String, img:String, keywords:String, state: String)
+case class Carro(id: Option[Long], name:String, year:Int, description:String,
+                 img:String, keywords:String, state: String, model: Long)
 
-case class CarroFormData(id:String, name: String, year:Int, description: String, keywords: String, state: String)
+case class CarroFormData(id:String, name: String, year:Int, description: String,
+                         keywords: String, state: String, model: Long)
 
 object CarroForm {
 
@@ -18,7 +20,8 @@ object CarroForm {
       "year" -> number,
       "description" -> nonEmptyText,
       "keywords" -> nonEmptyText,
-      "state"	-> nonEmptyText
+      "state"	-> nonEmptyText,
+      "model" -> longNumber
     )(CarroFormData.apply)(CarroFormData.unapply)
   )
 }
