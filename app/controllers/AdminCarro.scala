@@ -21,23 +21,32 @@ import javax.inject._
 import services.Authenticated
 
 class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
+                            repomodel: ModeloRepository,
                             val messagesApi: MessagesApi)
                            (implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   implicit val responseFormat = Json.format[JsonResponse]
   implicit val MediaFormat = Json.format[Media]
 
-  def index = Authenticated.async {
-    val lista = repo.list()
-    lista.map( i =>
-      Ok(views.html.admin.list(i))
+  def index(page: Int = 1) = Authenticated.async {
+    val lista = repo.list(page)
+    lista.flatMap( i =>
+      repo.count().map { f =>
+        Ok(views.html.admin.list(i,
+          Math.ceil(f.toDouble/repo.PAGESIZE.toDouble).toInt )
+        )
+      }
     )
   }
 
-  def carro( id:Long) = Authenticated {
-  	
-  	val car = new Carro(Some(1), "BMW M6", 2005, "5 portas, de 2005", "bmw-m6.jpeg", "bmw, m6, 5 portas", "active")
-  	Ok(views.html.admin.carro(car))
+  def carro( id:Long) = Authenticated.async {
+    repo.get(id).map { car =>
+      if (car != None) {
+        Ok(views.html.admin.carro(car.get))
+      } else {
+        Ok("NO GO")
+      }
+    }
   }
 
   def addView = Authenticated {
@@ -56,7 +65,8 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
         Ok(views.html.admin.add(errorForm))
       },
       carro => {
-        repo.insert(new Carro(None, carro.name, carro.year, carro.description, filename.getOrElse("logo.png"), carro.keywords, carro.state))
+        repo.insert(new Carro(None, carro.name, carro.year, carro.description, filename.getOrElse("logo.png"),
+          carro.keywords, carro.state, carro.model))
         .map { _ =>
           // If successful, we simply redirect to the index page.
           Redirect(routes.Application.index)
@@ -73,18 +83,21 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
 
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
-      errorForm => scala.concurrent.Future {
+      errorForm => {
         val id = CarroForm.form("id").value.get.toLong
         val medias = repomedia.getByCarId(id)
-        Ok(views.html.admin.update(errorForm, medias))
-      },
+        repomodel.get(CarroForm.form("model").value.get.toLong).map {
+          m => Ok(views.html.admin.update(errorForm, medias, m.get))
+        }
+      }
+      ,
       carro => {        
         val car = new Carro( Some(carro.id.toLong), carro.name, carro.year, carro.description,
-          filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state)
+          filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state, carro.model)
 
         repo.edit(carro.id.toLong, car).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.AdminCarro.index)
+          Redirect(routes.AdminCarro.index(1))
         }
       }
     )
@@ -92,10 +105,10 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
 
   def editView(id:Long) = Authenticated.async {
 
-    repo.get(id).map { car =>
+    repo.get(id).flatMap { car =>
       // TODO better 404
       if (car == None) {
-        NotFound
+        scala.concurrent.Future(NotFound)
       } else {
 
         val data = Map(
@@ -105,13 +118,16 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
           "description" -> car.get.description,
           "keywords" -> car.get.keywords,
           "img" -> car.get.img,
-          "state" -> car.get.state
+          "state" -> car.get.state,
+          "model" -> car.get.model.toString()
           )
         val id = car.get.id.get.toLong
         val medias = repomedia.getByCarId(id)
-
-        Ok(views.html.admin.update(CarroForm.form.bind(data), medias))
-
+        repomodel.get(car.get.model).map {
+          model => Ok(views.html.admin.update(
+            CarroForm.form.bind(data), medias, model.get)
+          )
+        }
       }
       // TODO make this show a not found personalised page
     }
@@ -217,8 +233,24 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
     Ok(json)
   }
 
-  def remove = TODO
+  /**
+    * Remove the item from the database
+    *
+    * @param id
+    * @return
+    */
+  def remove(id:Long) = Authenticated {
+    repo.remove(id)
+    val json = new JsonResponse("success", "Deleted from database.")
+    Ok(Json.toJson(json))
+  }
 
+  /**
+    * Remove Media from the Car
+    *
+    * @param id
+    * @return
+    */
   def removeMedia(id: Long) = Authenticated.async {
     repomedia.get(id).map { media =>
       media.getOrElse(NotFound("This was not found. Sorry.")) // TODO better 404
