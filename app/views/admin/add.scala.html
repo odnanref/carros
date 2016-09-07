@@ -16,6 +16,17 @@
 		<img src="@routes.Assets.at(car("img").value.getOrElse("logo.png"))" width="200" height="100"  />
 		 <span>@car("img").value</span>
 		@inputText(car("keywords"), '_label -> "Palavras chave")
+
+		<span for="make">Marca</span>
+		<select id="make" onchange="onBrandChange();">
+			<option value="0">&nbsp;</option>
+		</select>
+
+		<span for="model">Modelo</span>
+		<select name="model" id="model">
+			<option value="0">&nbsp;</option>
+		</select>
+
 		@select(
 			car("state"),
 			options("active" -> "Activo", "inactive" -> "Inactivo"),
@@ -30,5 +41,9 @@
 	@admin.nav()
 
 	</div>
+
+<script type="text/Javascript">
+getBrands();
+</script>
 	
 }
