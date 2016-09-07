@@ -44,7 +44,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
       if (car != None) {
         Ok(views.html.admin.carro(car.get))
       } else {
-        Ok("NO GO")
+        NotFound("Não vi por aqui.")
       }
     }
   }
@@ -54,24 +54,21 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
   }
 
   def save() = Authenticated.async(parse.multipartFormData) { implicit request =>
-    
-    val car_id = getCarIdFromRequest(request)
 
-    val filename = handleUpload(request, car_id)
-    
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => scala.concurrent.Future {
         Ok(views.html.admin.add(errorForm))
       },
       carro => {
-        repo.insert(new Carro(None, carro.name, carro.year, carro.description, filename.getOrElse("logo.png"),
+        repo.insert(new Carro(None, carro.name, carro.year, carro.description, "logo.png",
           carro.keywords, carro.state, carro.model))
-        .map { _ =>
+        .map { car =>
           // If successful, we simply redirect to the index page.
+          val filename = handleUpload(request, car)
+          repo.updateMainImage(filename.get, car)
           Redirect(routes.Application.index)
         }
-        
       }
     )
   }
@@ -281,4 +278,5 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
       car_id.get(0).toLong
     }
   }
+
 }
