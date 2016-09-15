@@ -10,7 +10,14 @@
 	, 'enctype -> "multipart/form-data") {
 		<input type="hidden" name="id" value='@car("id").value' >
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
-		@inputText( car("year"), '_label -> "Ano" , 'id -> "year", 'size -> 20)
+
+        <span for="year">Ano</span>
+        <select name="year">
+            @for( a <- 2016 to 1982 by -1 ) {
+            <option value="@a">@a</option>
+            }
+        </select>
+
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description"
 		, 'cols -> 50, 'rows -> 10)
 		@inputFile(car("img"), '_label -> "Imagem")
@@ -185,12 +192,8 @@ function Eliminar() {
 $('#divuploadimg').hide();
 loadMedia(@car("id").value);
 
-getBrands();
-console.log("set make and model");
-$(function () {
-    $('#make').val(@model.marca);
-    onBrandChange(@model.id);
-    console.log("Make is " + @model.marca + " model is " + @model.id );
-});
+getBrands(@model.marca, @model.id);
+console.log("set make and model for @model.marca  and model @model.id." );
+
 </script>
 }

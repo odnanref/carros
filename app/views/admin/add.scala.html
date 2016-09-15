@@ -9,7 +9,13 @@
 	, 'enctype -> "multipart/form-data") {
 		<input type="hidden" name="id" value='@car("id").value' >
 		@inputText( car("name"), '_label -> "Nome" , 'id -> "name", 'size -> 20)
-		@inputText( car("year"), '_label -> "Ano" , 'id -> "year", 'size -> 20)
+
+		<span for="year">Ano</span>
+		<select name="year">
+		@for( a <- 2016 to 1982 by -1 ) {
+			<option value="@a">@a</option>
+		}
+		</select>
 		@textarea(car("description"), '_label -> "Descrição" , 'id -> "description")
 		@inputFile(car("img"), '_label -> "Imagem")
 		Existente<!-- current -->

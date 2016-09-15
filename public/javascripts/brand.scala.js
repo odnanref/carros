@@ -31,8 +31,9 @@ function getModelsForBrand(id, model_id) {
     });
 }
 
-function getBrands() {
-    //http_url = "@routes.NotificationController.getBrands()";
+function getBrands(id, model_id) {
+    var id = id || 0;
+    var model_id = model_id || 0;
     http_url = "/getbrands";
     $("#make").empty();
 
@@ -40,6 +41,12 @@ function getBrands() {
         data.forEach( function (ent) {
             $("#make").append(getOption(ent));
         });
+        if (id > 0) {
+            $("#make").val(id);
+            if (model_id > 0 ) {
+                onBrandChange(model_id);
+            }
+        }
     });
 }
 
