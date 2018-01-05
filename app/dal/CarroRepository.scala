@@ -1,15 +1,17 @@
 package dal
 
-import javax.inject.{ Inject, Singleton }
+import java.sql.Timestamp
+import java.time.LocalTime
+import javax.inject.{Inject, Singleton}
+
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
-
 import models._
+import org.joda.time.DateTime
 
 import scala.concurrent._
 import scala.concurrent.duration._
-
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 /**
  * A repository for Cars.
@@ -53,6 +55,8 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
 
     def model = column[Long]("model")
 
+    def datein = column[DateTime]("datein")
+
     /**
       * This is the tables default "projection".
       *
@@ -61,12 +65,16 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
       * In this case, we are simply passing the id, name and page parameters to the Person case classes
       * apply and unapply methods.
       */
-    def * = (id, name, year, description, img, keywords, state, model) <>
+    def * = (id, name, year, description, img, keywords, state, model, datein) <>
       ((Carro.apply _).tupled, Carro.unapply)
-
   }
 
-  val PAGESIZE: Int = 10
+  implicit val JodaDateTimeMapper = MappedColumnType.base[DateTime, Timestamp](
+    dt => new Timestamp(dt.getMillis),
+    ts => new DateTime(ts.getTime())
+  )
+
+  val PAGESIZE: Int = 20
 
   implicit class QueryExtensions[T, E, S[E]](val q: Query[T, E, S]) {
     def page(no: Int, pageSize: Int): Query[T, E, S] = {
@@ -88,14 +96,16 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
   def create(name: String, description: String, year: Int, img: String, keywords: String, state: String, model: Long):
   Future[Carro] = db.run {
     // We create a projection of just the name and age columns, since we're not inserting a value for the id column
-    (carro.map(p => (p.name, p.year, p.description, p.img, p.keywords, p.state, p.model))
+    (carro.map(p => (p.name, p.year, p.description, p.img, p.keywords, p.state, p.model, p.datein))
       // Now define it to return the id, because we want to know what id was generated for the car
       returning carro.map(_.id)
       // And we define a transformation for the returned value, which combines our original parameters with the
       // returned id
-      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5, nameAge._6, nameAge._7))
+      into ((nameAge, id) => Carro(id, nameAge._1, nameAge._2, nameAge._3, nameAge._4, nameAge._5, nameAge._6, nameAge._7,
+      nameAge._8
+      ))
       // And finally, insert the car into the database
-      ) +=(name, year, description, img, keywords, state, model)
+      ) +=(name, year, description, img, keywords, state, model, new DateTime() )
   }
 
   //val insertQuery = carro returning carro.map(_.id) into ((Carro, id) => Carro.copy(id = id))
@@ -156,7 +166,6 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
     * @return string
     */
   def getImage( id:Long) :String = {
-    var result:String = "" 
     if (id <= 0) {
       return "logo.png"
     }
@@ -196,5 +205,11 @@ class CarroRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(impli
   def updateMainImage(filename:String, car_id: Long) :Future[Int] = {
     val q = for { l <- carro if l.id === car_id } yield l.img
     db.run(q.update(filename))
+  }
+
+  def search(model:Long, year:Int) : Future[Seq[Carro]] = {
+    db.run(
+      carro.filter( x => (x.model === model && x.year === year) ).result
+    )
   }
 }

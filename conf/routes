@@ -6,6 +6,7 @@
 GET     /                           controllers.Application.index
 GET     /carros                     controllers.Application.index
 GET     /carro/:id                  controllers.Application.carro(id :Long)
+GET     /search                     controllers.Application.search(model: Option[Long], year: Option[Int])
 
 GET     /admin/carro/               controllers.AdminCarro.index(page: Int = 1)
 GET     /admin/carro/add            controllers.AdminCarro.addView
@@ -24,7 +25,7 @@ GET     /admin/media/remove/:id     controllers.AdminCarro.removeMedia(id :Long)
 GET     /admin/user/login           controllers.AdminUser.loginView
 POST    /admin/user/auth            controllers.AdminUser.loginAuth
 GET		/admin/user/add				controllers.AdminUser.addView
-POST	/admin/user					controllers.AdminUser.save
+POST	/admin/user/save			controllers.AdminUser.save
 GET		/admin/user/update/:id		controllers.AdminUser.editView(id:Long)
 POST	/admin/user/update			controllers.AdminUser.update
 GET		/admin/user					controllers.AdminUser.index(page: Int = 1)

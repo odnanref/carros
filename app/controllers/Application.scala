@@ -2,6 +2,7 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.libs.json.Json
 import models._
 import dal._
 
@@ -11,6 +12,8 @@ import javax.inject._
 
 class Application  @Inject() (repo: CarroRepository, repomedia: MediaRepository)
                                  (implicit ec: ExecutionContext) extends Controller {
+
+  implicit val CarroFormat = Json.format[Carro]
 
   def index = Action {
     Ok(views.html.index("Your new application is ready. Muhahaha", "andre"))
@@ -36,5 +39,15 @@ class Application  @Inject() (repo: CarroRepository, repomedia: MediaRepository)
 		  
       // TODO make this show a not found personalised page
   	}
-  }  
+  }
+
+  def search(model: Option[Long], year: Option[Int]) = Action.async {
+    if (model.isEmpty || year.isEmpty) {
+      Future { Ok(views.html.search()) }
+    } else {
+      repo.search(model.get, year.get).map { res =>
+        Ok(Json.toJson(res))
+      }
+    }
+  }
 }

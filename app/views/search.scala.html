@@ -1,0 +1,73 @@
+
+@import helper._
+
+@mainWebsite(new Main("Pesquisa", "Pesquisa de carros", "logo.png", "pesquisa, procura, carros", "/search")) {
+
+    <div>
+        <select name="year" id="year">
+            @for( a <- 2016 to 1982 by -1) {
+            <option value="@a">@a</option>
+            }
+        </select>
+
+        <span for="make">Marca</span>
+        <select id="make" onchange="onBrandChange();">
+            <option value="0">&nbsp;</option>
+        </select>
+
+        <span for="model">Modelo</span>
+        <select name="model" id="model">
+            <option value="0">&nbsp;</option>
+        </select>
+
+        <button class="btn" onClick="doSearch();">Procurar</button>
+    </div>
+
+    <div class="row" id="displayroom">
+
+    </div>
+
+<script type="text/Javascript">
+getBrands();
+
+function getDisplay(ent) {
+    var target = "@routes.Assets.at("IMGLOCATION")";
+    var tmp = target.replace("IMGLOCATION", ent.img);
+    var target2 = "@routes.Application.carro(31337)";
+
+    return '<div class="col-md-1">' +
+    "<a href='" + target2.replace("31337", ent.id) + "'>" +
+    '<img src="' + tmp + '" alt="' + ent.name + '" width="200" height="100" />'
+    "</a>" +
+    + '</div>'
+    ;
+}
+
+function doSearch() {
+    var model_id = $("#model").val();
+    var year = $("#year").val();
+
+    $("#displayroom").html("");
+
+    var success = function success(data) {
+        data.forEach(function (ent) {
+            $("#displayroom").append(
+                getDisplay(ent)
+            );
+        });
+        if (data.length <= 0 ) {
+            $("#displayroom").append(
+                "Nada encontrado."
+            );
+        }
+    }
+
+    $.ajax({
+      url: "/search",
+      data: { "model": model_id, "year": year},
+      success: success,
+      dataType: "json"
+    });
+}
+</script>
+}

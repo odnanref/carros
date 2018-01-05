@@ -89,8 +89,9 @@ class UserRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implic
   }
 
   /** Insert a new User. */
-  def insert(med: User): Future[Unit] = {
-    db.run(user += med).map(_ => ())
+  def insert(med: User): Future[User] = {
+    val insertQuery = user returning user.map(_.id) into ((User, id) => User.copy(id = id))
+    db.run(insertQuery += med)
   }
 
   /**

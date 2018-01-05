@@ -4,12 +4,8 @@ import play.api._
 import play.api.Play
 import play.api.mvc._
 import play.api.i18n._
-import play.api.data.Form
-import play.api.data.Forms._
-import play.api.data.validation.Constraints._
 import play.api.Play.current
 import play.api.libs.json.Json
-import play.api.libs.json._
 import models._
 import dal._
 
@@ -18,6 +14,8 @@ import scala.util.{Failure, Success}
 import java.io.File
 import javax.inject._
 
+import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
 import services.Authenticated
 
 class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
@@ -54,47 +52,55 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
   }
 
   def save() = Authenticated.async(parse.multipartFormData) { implicit request =>
-
+    val log = LoggerFactory.getLogger("TESTING")
+    log.debug(" LOOK HERE SERVERD " + new java.util.Date().getTime)
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
-      errorForm => scala.concurrent.Future {
-        Ok(views.html.admin.add(errorForm))
+      errorForm => {
+        log.debug(" LOOK HERE SERVERD " + new java.util.Date().getTime)
+        Future { Ok(views.html.admin.add(errorForm)) }
       },
       carro => {
         repo.insert(new Carro(None, carro.name, carro.year, carro.description, "logo.png",
-          carro.keywords, carro.state, carro.model))
+          carro.keywords, carro.state, carro.model, new DateTime()))
         .map { car =>
-          // If successful, we simply redirect to the index page.
           val filename = handleUpload(request, car)
-          repo.updateMainImage(filename.get, car)
-          Redirect(routes.Application.index)
+          if (!filename.isEmpty) {
+            repo.updateMainImage(filename.get, car)
+          }
+          Redirect(routes.AdminCarro.editView(car))
         }
       }
     )
   }
 
   def update() = Authenticated.async(parse.multipartFormData) { implicit request =>
-    //val tId:Long = id.toLong
     val car_id = getCarIdFromRequest(request)
     val filename = handleUpload(request, car_id)
 
     CarroForm.form.bindFromRequest.fold(
       // if any error in submitted data
       errorForm => {
-        val id = CarroForm.form("id").value.get.toLong
+        val id = if (CarroForm.form("id").value != None ) {
+          CarroForm.form("id").value.get.toLong
+        } else {
+          0
+        }
+
         val medias = repomedia.getByCarId(id)
         repomodel.get(CarroForm.form("model").value.get.toLong).map {
           m => Ok(views.html.admin.update(errorForm, medias, m.get))
         }
       }
       ,
-      carro => {        
+      carro => {
+        import models.Carros._
         val car = new Carro( Some(carro.id.toLong), carro.name, carro.year, carro.description,
-          filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state, carro.model)
+          filename.getOrElse(repo.getImage(carro.id.toLong)), carro.keywords, carro.state, carro.model, carro.datein)
 
         repo.edit(carro.id.toLong, car).map { _ =>
           // If successful, we simply redirect to the index page.
-          Redirect(routes.AdminCarro.index(1))
+          Redirect(routes.AdminCarro.editView(carro.id.toLong))
         }
       }
     )
@@ -116,7 +122,8 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
           "keywords" -> car.get.keywords,
           "img" -> car.get.img,
           "state" -> car.get.state,
-          "model" -> car.get.model.toString()
+          "model" -> car.get.model.toString(),
+          "datein" -> car.get.datein.toString("dd/MM/yyyy H:m:s")
           )
         val id = car.get.id.get.toLong
         val medias = repomedia.getByCarId(id)
@@ -176,8 +183,10 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
 
       picture.ref.moveTo(f1) 
       // after moving resize ...
-      val imageReduce = new services.ImageReduce(f1.getAbsolutePath(), car_id)
-      imageReduce.scale()
+      Future {
+        val imageReduce = new services.ImageReduce(f1.getAbsolutePath(), car_id)
+        imageReduce.scale()
+      }
       // FIXME handle move error
       if (found) {
         Option("new-" + picture.filename)
@@ -187,11 +196,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
 
     }.getOrElse {
       println("Missing file.")
-      /*
-        Redirect(routes.Application.index).flashing(
-          "error" -> "Missing file"
-        )
-      */
+
       None
     }
   }
@@ -278,5 +283,7 @@ class AdminCarro @Inject() (repo: CarroRepository, repomedia: MediaRepository,
       car_id.get(0).toLong
     }
   }
+
+  def searchAction() = TODO
 
 }
